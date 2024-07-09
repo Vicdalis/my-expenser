@@ -3,9 +3,14 @@ import React, { useEffect, useState } from "react";
 import Statistic from './Statistic'
 import SalesByCategories from "./SalesByCategories";
 import TaskOverview from "./TaskOverview";
+import LatestOrder from "./LatestOrder";
+import TopProduct from "./TopProduct";
+import { getSalesDashboardData, setStartDate, useAppSelector } from "./store";
+import { useAppDispatch } from '@/store'
+import DashboardHeader from "./dashboardHeader";
+
 
 const DashboardComponent = () => {
-    const [loading, setLoading] = useState(false);
     const [statistics, setStatistics] = useState({
         revenue: {
             value: 200000,
@@ -102,28 +107,53 @@ const DashboardComponent = () => {
         },
     })
 
+    const dispatch = useAppDispatch()
+
+    const dashboardData = useAppSelector(
+        (state) => {
+            console.log("🚀 ~ DashboardComponent ~ state:", state)
+            return state.salesDashboard?.data.dashboardData
+        }
+    )
+
+    const loading = useAppSelector((state) => {
+        console.log("🚀 ~ loading ~ state:", state);
+        return state.salesDashboard?.data.loading;
+    })
+
+    
+
     useEffect(() => {
-        setTimeout(() => {
-            setLoading(false)
-        }, 4000);
+        fetchData()
+        
     }, [])
+
+    const fetchData = () => {
+        dispatch(getSalesDashboardData())
+        // dispatch(setStartDate(1720483615))
+    }
 
     return (
         <div className="flex flex-col gap-4 h-full">
             <Loading loading={loading}>
-            <Statistic data={statistics} />
-            <div className="flex flex-col xl:flex-row gap-4">
-                <div className="flex flex-col gap-6">
+                <DashboardHeader></DashboardHeader>
+                <Statistic data={statistics} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <TaskOverview
+                        data={expensesOverview}
+                        className="col-span-2"
+                    />
                     <SalesByCategories
                         data={expensesCategories}
                     />
                 </div>
-                <div className="flex flex-col gap-4 flex-auto">
-                    <TaskOverview
-                        data={expensesOverview}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <LatestOrder
+                        data={dashboardData?.latestOrderData}
+                        className="lg:col-span-2"
                     />
+                    <TopProduct data={dashboardData?.topProductsData} />
                 </div>
-            </div>
             </Loading>
         </div>
     )

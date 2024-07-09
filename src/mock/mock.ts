@@ -3,7 +3,14 @@ import appConfig from '@/configs/app.config'
 
 import { signInUserData } from './data/authData'
 
-import { authFakeApi } from './fakeApi'
+import { authFakeApi, salesFakeApi } from './fakeApi'
+
+import {
+    productsData,
+    ordersData,
+    orderDetailsData,
+    salesDashboardData,
+} from './data/salesData';
 
 const { apiPrefix } = appConfig
 
@@ -13,6 +20,10 @@ export function mockServer({ environment = 'test' }) {
         seeds(server) {
             server.db.loadData({
                 signInUserData,
+                salesDashboardData,
+                productsData,
+                ordersData,
+                orderDetailsData,
             })
         },
         routes() {
@@ -25,6 +36,7 @@ export function mockServer({ environment = 'test' }) {
             this.passthrough()
 
             authFakeApi(this, apiPrefix)
+            salesFakeApi(this, apiPrefix)
         },
     })
 }

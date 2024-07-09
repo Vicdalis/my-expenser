@@ -14,8 +14,7 @@ const FooterContent = () => {
         <div className="flex items-center justify-between flex-auto w-full">
             <span>
                 Copyright &copy; {`${new Date().getFullYear()}`}{' '}
-                <span className="font-semibold">{`${APP_NAME}`}</span> All
-                rights reserved.
+                <span className="font-semibold">{`${APP_NAME}`}</span> Todos los derechos reservados
             </span>
             <div className="">
                 <a
@@ -23,7 +22,7 @@ const FooterContent = () => {
                     href="/#"
                     onClick={(e) => e.preventDefault()}
                 >
-                    Term & Conditions
+                    Términos y Condiciones
                 </a>
                 <span className="mx-2 text-muted"> | </span>
                 <a
@@ -31,7 +30,7 @@ const FooterContent = () => {
                     href="/#"
                     onClick={(e) => e.preventDefault()}
                 >
-                    Privacy & Policy
+                    Políticas de Privacidad
                 </a>
             </div>
         </div>

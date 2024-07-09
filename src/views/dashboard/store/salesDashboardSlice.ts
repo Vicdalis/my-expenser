@@ -74,6 +74,7 @@ const salesDashboardSlice = createSlice({
     initialState,
     reducers: {
         setStartDate: (state, action: PayloadAction<number>) => {
+            console.log("🚀 ~ state:", state)
             state.startDate = action.payload
         },
         setEndDate: (state, action: PayloadAction<number>) => {
@@ -83,10 +84,12 @@ const salesDashboardSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(getSalesDashboardData.fulfilled, (state, action) => {
+                console.log("🚀 ~ .addCase ~ action:", action)
                 state.dashboardData = action.payload
                 state.loading = false
             })
             .addCase(getSalesDashboardData.pending, (state) => {
+                console.log("🚀 ~ .addCase ~ state:", state)
                 state.loading = true
             })
     },
