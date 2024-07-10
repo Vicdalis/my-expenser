@@ -1,5 +1,7 @@
+import HeaderComponent from "./components/HeaderComponent"
+
 const RegularPaymentsView = () => {
-    return <p>ESTOY EN PAGOS REGULARS </p>
+    return <HeaderComponent title="Pagos Recurrentes" subtitle="Configura tus pagos regulares"/>
 }
 
 export default RegularPaymentsView

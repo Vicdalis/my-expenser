@@ -1,5 +1,7 @@
+import HeaderComponent from "./components/HeaderComponent";
+
 const IncomesView = () =>{
-    return <p>ESTOY EN MY INCOMES</p>
+    return <HeaderComponent title="Ingresos" subtitle="Historial de Ingresos" />
 }
 
 export default IncomesView;

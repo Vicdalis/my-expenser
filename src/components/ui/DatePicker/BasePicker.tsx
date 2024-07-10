@@ -27,6 +27,7 @@ import {
     flip,
     shift,
 } from '@floating-ui/react';
+import React from 'react'
 
 dayjs.extend(localizedFormat)
 
@@ -176,7 +177,7 @@ const BasePicker = forwardRef<HTMLInputElement, BasePickerProps>(
         const headingId = useId();
 
         return (
-            <>
+            <React.Fragment>
                 <Input
                     ref={useMergedRef(ref, refs.setReference)}
                     form={form}
@@ -212,7 +213,7 @@ const BasePicker = forwardRef<HTMLInputElement, BasePickerProps>(
                          <div className="picker-panel">{children}</div>
                     </div>
                 )}
-            </>
+            </React.Fragment>
         )
     }
 )

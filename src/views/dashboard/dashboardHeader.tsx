@@ -10,6 +10,7 @@ import { useAppDispatch } from '@/store'
 import { HiOutlineFilter } from 'react-icons/hi'
 import dayjs from 'dayjs'
 import Select from "@/components/ui/Select";
+import HeaderComponent from '../components/HeaderComponent'
 
 const dateFormat = 'MMM DD, YYYY'
 
@@ -40,31 +41,18 @@ const DashboardHeader = () => {
     ]
 
     return (
-        <div className="lg:flex items-center justify-between mb-4 gap-3">
-            <div className="mb-4 lg:mb-0">
-                <h3>Inicio</h3>
-                <p>Resumen de Gastos</p>
-            </div>
-            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-                {/* <DatePickerRange
-                    value={[
-                        dayjs.unix(startDate).toDate(),
-                        dayjs.unix(endDate).toDate(),
-                    ]}
-                    inputFormat={dateFormat}
-                    size="sm"
-                    onChange={handleDateChange}
-                /> */}
-                <Select
-                    placeholder="Elija un Mes"
-                    options={monthOptions}
-                    defaultValue={monthOptions[0]}
-                ></Select>
-                <Button size="sm" icon={<HiOutlineFilter />} onClick={onFilter}>
-                    Filter
-                </Button>
-            </div>
-        </div>
+            <HeaderComponent title='Inicio' subtitle='Resumen de Gastos'>
+                <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                    <Select
+                        placeholder="Elija un Mes"
+                        options={monthOptions}
+                        defaultValue={monthOptions[0]}
+                    ></Select>
+                    <Button size="sm" icon={<HiOutlineFilter />} onClick={onFilter}>
+                        Filter
+                    </Button>
+                </div>
+            </HeaderComponent>
     )
 }
 

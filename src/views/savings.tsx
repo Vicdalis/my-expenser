@@ -1,5 +1,7 @@
+import HeaderComponent from "./components/HeaderComponent"
+
 const SavingsView = () =>{
-    return <p>ESTOY EN MY SAVINGS</p>
+    return <HeaderComponent title="Ahorros" subtitle="Administra tu plan de ahorro"/>
 }
 
 export default SavingsView;

@@ -1,5 +1,7 @@
+import HeaderComponent from "./components/HeaderComponent"
+
 const SettingsView = () => {
-    return <p>ESTOY EN SETTINGS </p>
+    return <HeaderComponent title="Ajustes" subtitle="Personaliza tu app" />
 }
 
 export default SettingsView

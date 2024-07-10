@@ -1,5 +1,7 @@
+import HeaderComponent from "./components/HeaderComponent"
+
 const PaymentRemindersView = () => {
-    return <p>ESTOY EN RECORDATORIOS DE PAGO</p>
+    return <HeaderComponent title="Recordatorios de pago" subtitle="Administra tus notificaciones y recordatorios"/>
 }
 
 export default PaymentRemindersView;

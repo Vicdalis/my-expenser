@@ -1,5 +1,7 @@
+import HeaderComponent from "./components/HeaderComponent";
+
 const CategoryView = () =>{
-    return <p>ESTOY EN MI VISTA CATEGORY</p>
+    return <HeaderComponent title="Categorías" subtitle="Administra tus categorías de gastos" />
 }
 
 export default CategoryView;

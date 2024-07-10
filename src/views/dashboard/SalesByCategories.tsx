@@ -15,7 +15,7 @@ const SalesByCategories = ({
 }: SalesByCategoriesProps) => {
     return (
         <Card>
-            <h4>Categorías</h4>
+            <h4>Gastos por Categoría</h4>
             <div className="mt-6">
                 {data.data.length > 0 && (
                     <>
@@ -23,8 +23,8 @@ const SalesByCategories = ({
                             donutTitle={`${data.data.reduce(
                                 (a, b) => a + b,
                                 0
-                            )}`}
-                            donutText="Categorías"
+                            )}$`}
+                            donutText="Total"
                             series={data.data}
                             customOptions={{ labels: data.labels }}
                             type="donut"
