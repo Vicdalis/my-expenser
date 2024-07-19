@@ -8,6 +8,7 @@ export interface BadgeProps extends CommonProps {
     content?: string | number
     innerClass?: string
     maxCount?: number
+    type?: 'big' | 'normal'
 }
 
 const Badge = forwardRef<HTMLElement, BadgeProps>((props, ref) => {
@@ -17,13 +18,17 @@ const Badge = forwardRef<HTMLElement, BadgeProps>((props, ref) => {
         className,
         content,
         innerClass,
+        type,
         maxCount = 99,
         ...rest
     } = props
 
     const dot = typeof content !== 'number' && typeof content !== 'string'
 
-    const badgeClass = classNames(dot ? 'badge-dot' : 'badge', innerClass)
+    const badgeType = type === 'big' ? 'big-badge-dot' : 'badge-dot';
+
+    const badgeClass = classNames(dot ? badgeType : 'badge', innerClass)
+    
 
     const renderBadge = () => {
         if (children) {
