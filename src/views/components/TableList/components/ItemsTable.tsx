@@ -12,6 +12,7 @@ import {
     useAppDispatch,
     useAppSelector,
 } from '../store'
+
 import useThemeClass from '@/utils/hooks/useThemeClass'
 import DeleteConfirmation from './TableDeleteConfirmation'
 import { useNavigate } from 'react-router-dom'
@@ -33,32 +34,23 @@ type Product = {
     status: number
 }
 
-const inventoryStatusColor: Record<
-    number,
-    {
-        label: string
-        dotClass: string
-        textClass: string
-    }
-> = {
-    0: {
-        label: 'In Stock',
-        dotClass: 'bg-emerald-500',
-        textClass: 'text-emerald-500',
-    },
-    1: {
-        label: 'Limited',
-        dotClass: 'bg-amber-500',
-        textClass: 'text-amber-500',
-    },
-    2: {
-        label: 'Out of Stock',
-        dotClass: 'bg-red-500',
-        textClass: 'text-red-500',
-    },
+enum eTypeColumns {
+    TEXT = 'text',
+    IMAGE = 'image',
+    TEXT_IMAGE = 'text_image',
+    BADGE = 'badge',
+    TEXT_BADGE = 'text_badge'
 }
 
-const ActionColumn = ({ row }: { row: Product }) => {
+type Columns = {
+    id: string
+    name: string
+    key: string
+    image?: string
+    type: eTypeColumns
+}
+
+const ActionColumn = ({ row }: { row: any }) => {
     const dispatch = useAppDispatch()
     const { textTheme } = useThemeClass()
     const navigate = useNavigate()
@@ -70,6 +62,7 @@ const ActionColumn = ({ row }: { row: Product }) => {
     const onDelete = () => {
         dispatch(toggleDeleteConfirmation(true))
         dispatch(setSelectedProduct(row.id))
+        console.log('ELIMINANDO...');
     }
 
     return (
@@ -90,7 +83,7 @@ const ActionColumn = ({ row }: { row: Product }) => {
     )
 }
 
-const Column = ({ row }: { row: Product }) => {
+const Column = ({ row }: { row: { img?: string, name: string } }) => {
     const avatar = row.img ? (
         <Avatar src={row.img} />
     ) : (
@@ -105,7 +98,13 @@ const Column = ({ row }: { row: Product }) => {
     )
 }
 
-const ItemsTable = ({deleteMessage}: {deleteMessage: string}) => {
+interface ItemsTableProps<T> {
+    deleteMessage: string;
+    dataList: T[];
+    columnsList: Columns[];
+}
+
+const ItemsTable = <T,>({ deleteMessage, dataList, columnsList }: ItemsTableProps<T>) => {
     const tableRef = useRef<DataTableResetHandle>(null)
 
     const dispatch = useAppDispatch()
@@ -122,9 +121,7 @@ const ItemsTable = ({deleteMessage}: {deleteMessage: string}) => {
         (state) => state.salesProductList.data.loading
     )
 
-    const data = useAppSelector(
-        (state) => state.salesProductList.data.productList
-    )
+    const data = dataList;
 
     useEffect(() => {
         fetchData()
@@ -146,70 +143,74 @@ const ItemsTable = ({deleteMessage}: {deleteMessage: string}) => {
         dispatch(getProducts({ pageIndex, pageSize, sort, query, filterData }))
     }
 
-    const columns: ColumnDef<Product>[] = useMemo(
-        () => [
-            {
-                header: 'Nombre',
-                accessorKey: 'name',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <Column row={row} />
-                },
-            },
-            {
-                header: 'Tipo',
-                accessorKey: 'type',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <Column row={row} />
-                },
-            },
-            {
-                header: 'Status',
-                accessorKey: 'status',
-                cell: (props) => {
-                    const { status } = props.row.original
-                    return (
-                        <div className="flex items-center gap-2">
-                            <Badge
-                                className={
-                                    inventoryStatusColor[status].dotClass
-                                }
-                            />
-                            <span
-                                className={`capitalize font-semibold ${inventoryStatusColor[status].textClass}`}
-                            >
-                                {inventoryStatusColor[status].label}
-                            </span>
-                        </div>
-                    )
-                },
-            },
-            {
-                header: 'Color',
-                accessorKey: 'color',
-                cell: (props) => {
-                    const { status } = props.row.original
-                    return (
-                        <div className="flex items-center justify-center gap-2">
-                            <Badge
-                                type='big'
-                                className={
-                                    inventoryStatusColor[status].dotClass
-                                }
-                            />
-                        </div>
-                    )
-                },
-            },
-            {
+    const columns: ColumnDef<any>[] = useMemo(
+        () => {
+            let finalColumns: any[] = columnsList.map((col) => {
+                let column = {
+                    header: col.name,
+                    accessorKey: col.name,
+                    cell: (props: any) => {
+                        const row = props.row.original;
+
+                        switch (col.type) {
+                            case eTypeColumns.TEXT_IMAGE:
+                                return <Column row={{ img: row.image, name: row[col.key] }} />
+                            case eTypeColumns.TEXT_BADGE:
+                                
+                                return (
+                                    <div className="flex items-center gap-2">
+                                        <Badge
+                                            className={row[col.key] ? "bg-emerald-500 ": 'bg-red-500'}
+                                        />
+                                        <span
+                                            className={`capitalize font-semibold ${row[col.key] ? 'text-emerald-500' : 'text-red-500'}`}
+                                        >
+                                            {row[col.key] ? 'Activo' : 'Inactivo'}
+                                        </span>
+                                        
+                                    </div>
+                                ) 
+                                
+                            case eTypeColumns.BADGE:
+                                console.log(row[col.key])
+                                return (<div className="flex items-center gap-2">
+                                    <Badge
+                                        type='big'
+                                        className={"bg-" + [row[col.key]]}
+                                    />
+                                </div>)
+                            case eTypeColumns.IMAGE:
+                                return row[col.key] ? (
+                                        <Avatar src={row[col.key]} />
+                                    ) : (
+                                        <Avatar icon={<FiPackage />} />
+                                    )
+                                
+
+                            default:
+                                return (
+                                    <div className="flex items-center gap-2">
+                                        {row[col.key]}
+                                    </div>
+                                )
+                        }
+                    },
+                };
+
+                return column;
+            })
+
+            finalColumns.push({
                 header: '',
                 id: 'action',
-                cell: (props) => <ActionColumn row={props.row.original} />,
-            },
-        ],
-        []
+                cell: (props: any) => <ActionColumn row={props.row.original} />,
+            },)
+
+            return finalColumns;
+        }, []
     )
+
+
 
     const onPaginationChange = (page: number) => {
         const newTableData = cloneDeep(tableData)
@@ -248,7 +249,7 @@ const ItemsTable = ({deleteMessage}: {deleteMessage: string}) => {
                 onSelectChange={onSelectChange}
                 onSort={onSort}
             />
-            <DeleteConfirmation deleteMessage={deleteMessage}/>
+            <DeleteConfirmation deleteMessage={deleteMessage} />
         </>
     )
 }

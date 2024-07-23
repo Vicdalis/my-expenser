@@ -3,19 +3,16 @@ import { FormItem, FormContainer } from '@/components/ui/Form'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import Select from '@/components/ui/Select'
-import Avatar from '@/components/ui/Avatar'
 import hooks from '@/components/ui/hooks'
-import { Field, Form, Formik, FieldProps } from 'formik'
-import { HiCheck, HiCheckCircle } from 'react-icons/hi'
-import { components, MultiValueGenericProps, OptionProps } from 'react-select'
+import { Field, FieldProps, Form, Formik } from 'formik'
+import { HiCheckCircle } from 'react-icons/hi'
+import { components } from 'react-select'
 import {
-    getMembers,
-    putProject,
+    getColors,
+    putCategory,
     toggleNewProjectDialog,
     useAppDispatch,
-    useAppSelector,
 } from './store'
-import cloneDeep from 'lodash/cloneDeep'
 import * as Yup from 'yup'
 import Segment from '@/components/ui/Segment'
 import classNames from 'classnames'
@@ -26,106 +23,59 @@ type FormModel = {
     color: string
 }
 
-type TaskCount = {
-    completedTask?: number
-    totalTask?: number
+interface iColor {
+    label: string;
+    value: string;
 }
 
 const { MultiValueLabel } = components
 
 const { useUniqueId } = hooks
 
-const CustomSelectOption = ({
-    innerProps,
-    label,
-    data,
-    isSelected,
-}: OptionProps<{ img: string }>) => {
-    return (
-        <div
-            className={`flex items-center justify-between p-2 ${
-                isSelected
-                    ? 'bg-gray-100 dark:bg-gray-500'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-600'
-            }`}
-            {...innerProps}
-        >
-            <div className="flex items-center">
-                <Avatar shape="circle" size={20} src={data.img} />
-                <span className="ml-2 rtl:mr-2">{label}</span>
-            </div>
-            {isSelected && <HiCheck className="text-emerald-500 text-xl" />}
-        </div>
-    )
-}
-
-const CustomControlMulti = ({ children, ...props }: MultiValueGenericProps) => {
-    const { img } = props.data
-
-    return (
-        <MultiValueLabel {...props}>
-            <div className="inline-flex items-center">
-                <Avatar
-                    className="mr-2 rtl:ml-2"
-                    shape="circle"
-                    size={15}
-                    src={img}
-                />
-                {children}
-            </div>
-        </MultiValueLabel>
-    )
-}
-
 const validationSchema = Yup.object().shape({
-    title: Yup.string().min(3, 'Too Short!').required('Title required'),
-    content: Yup.string().required('Title required'),
-    assignees: Yup.array().min(1, 'Assignee required'),
-    rememberMe: Yup.bool(),
+    name: Yup.string().min(3, 'Too Short!').required('Ingrese un nombre'),
+    type: Yup.string().required('Seleccione un tipo'),
+    color: Yup.string().min(1, 'El color es requerido'),
+    // rememberMe: Yup.bool(),
 })
 
-const CategoryForm = () => {
+const CategoryForm = ({closeModal}: {closeModal: any}) => {
     const dispatch = useAppDispatch()
 
-    const newId = useUniqueId('project-')
+    
 
-    const [taskCount, setTaskCount] = useState<TaskCount>({})
+    const [colourOptions, setColors] = useState<iColor[]>([]) 
 
     useEffect(() => {
-        dispatch(getMembers())
+        dispatch(getColors()).then((result: any) => {
+            setColors(result.payload);
+        })
     }, [dispatch])
 
     const onSubmit = (
         formValue: FormModel,
         setSubmitting: (isSubmitting: boolean) => void
     ) => {
+        console.log('GUARDANDO ');
         setSubmitting(true)
-
         const { name, type, color } = formValue
 
-        const { totalTask, completedTask } = taskCount
-
         const values = {
-            id: newId,
             name: name,
             type: type,
             color: color,
-            totalTask,
-            completedTask,
-            progression:
-                ((completedTask as number) / (totalTask as number)) * 100 || 0,
+            icon: "",
+            status: true
         }
-        dispatch(putProject(values))
+        console.log("🚀 ~ CategoryForm ~ values:", values)
+        dispatch(putCategory(values))
         dispatch(toggleNewProjectDialog(false))
+        closeModal();
     }
 
     const segmentSelections = [
         { value: 'Ingresos', disabled: false },
         { value: 'Gastos', disabled: false },
-    ]
-
-    const colourOptions = [
-        {label: 'Blanco', value: '#fff'}
     ]
 
     return (
@@ -137,6 +87,8 @@ const CategoryForm = () => {
             }}
             validationSchema={validationSchema}
             onSubmit={(values, { setSubmitting }) => {
+                console.log("🚀 ~ CategoryForm ~ values:", values)
+                
                 onSubmit(values, setSubmitting)
             }}
         >
@@ -151,60 +103,73 @@ const CategoryForm = () => {
                             <Field
                                 type="text"
                                 autoComplete="off"
-                                name="title"
+                                name="name"
                                 placeholder="Nombre de Categoría..."
                                 component={Input}
                             />
                         </FormItem>
 
-                        <FormItem label='Tipo' invalid={
+                        <FormItem label='Tipo'  
+                        
+                            invalid={
                                 (errors.type && touched.type) as ''
                             }
                             errorMessage={errors.type as string}
+                            
                         >
-                            <Segment defaultValue={['Team']} className="gap-2 md:flex-row flex-col">
-                                {segmentSelections.map((item) => (
-                                    <Segment.Item
-                                        key={item.value}
-                                        value={item.value}
-                                        disabled={item.disabled}
-                                    >
-                                        {({ active, value, onSegmentItemClick, disabled }) => {
-                                            return (
-                                                <div
-                                                    className={classNames(
-                                                        'flex',
-                                                        'ring-1',
-                                                        'justify-between',
-                                                        'border',
-                                                        'rounded-md ',
-                                                        'border-gray-300',
-                                                        'py-5 px-4',
-                                                        'cursor-pointer',
-                                                        'select-none',
-                                                        'w-100',
-                                                        'md:w-[260px]',
-                                                        active
-                                                            ? 'ring-cyan-500 border-cyan-500'
-                                                            : 'ring-transparent',
-                                                        disabled
-                                                            ? 'opacity-50 cursor-not-allowed'
-                                                            : 'hover:ring-cyan-500 hover:border-cyan-500'
-                                                    )}
-                                                    onClick={onSegmentItemClick}
-                                                >
-                                                    <div>
-                                                        <h6>{value}</h6>
+                            <Field name="type">
+                                {({ field, form }: FieldProps<FormModel>) => (
+                                <Segment defaultValue={['Gastos']} 
+                                    className="gap-2 md:flex-row flex-col"
+                                    onChange={(val) => {form.setFieldValue(
+                                            field.name,
+                                            val[0]
+                                        ); console.log(val)} }    
+                                >
+                                    {segmentSelections.map((item) => (
+                                        <Segment.Item
+                                            key={item.value}
+                                            value={item.value}
+                                            disabled={item.disabled}
+                                        >
+                                            {({ active, value, onSegmentItemClick, disabled }) => {
+                                                return (
+                                                    <div
+                                                        className={classNames(
+                                                            'flex',
+                                                            'ring-1',
+                                                            'justify-between',
+                                                            'border',
+                                                            'rounded-md ',
+                                                            'border-gray-300',
+                                                            'py-5 px-4',
+                                                            'cursor-pointer',
+                                                            'select-none',
+                                                            'w-100',
+                                                            'md:w-[260px]',
+                                                            active
+                                                                ? 'ring-cyan-500 border-cyan-500'
+                                                                : 'ring-transparent',
+                                                            disabled
+                                                                ? 'opacity-50 cursor-not-allowed'
+                                                                : 'hover:ring-cyan-500 hover:border-cyan-500'
+                                                        )}
+                                                        onClick={onSegmentItemClick}
+                                                    >
+                                                        <div>
+                                                            <h6>{value}</h6>
+                                                        </div>
+                                                        {active && (
+                                                            <HiCheckCircle className="text-cyan-500 text-xl" />
+                                                        )}
                                                     </div>
-                                                    {active && (
-                                                        <HiCheckCircle className="text-cyan-500 text-xl" />
-                                                    )}
-                                                </div>
-                                            )
-                                        }}
-                                    </Segment.Item>
-                                ))}
-                            </Segment>
+                                                )
+                                            }}
+                                        </Segment.Item>
+                                    ))}
+                                </Segment>
+                                )}
+                            </Field>
                         </FormItem>
 
                         <FormItem
@@ -214,10 +179,25 @@ const CategoryForm = () => {
                             }
                             errorMessage={errors.color as string}
                         >
-                            <Select
-                                placeholder="Please Select"
-                                options={colourOptions}
-                            ></Select>
+                            <Field name="color">
+                                {({ field, form }: FieldProps<FormModel>) => (
+                                    <Select
+                                        placeholder="Color..."
+                                        field={field}
+                                        options={colourOptions}
+                                        name='color'
+                                        value={colourOptions.find(
+                                            (option) =>
+                                                option.value ===
+                                                values.color
+                                        )}
+                                        onChange={(val: any) => form.setFieldValue(
+                                            field.name,
+                                            val.value
+                                        )}
+                                    ></Select>
+                                )}
+                            </Field>
                         </FormItem>
                         
                         <Button block variant="solid" type="submit">
