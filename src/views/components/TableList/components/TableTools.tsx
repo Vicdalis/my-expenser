@@ -5,14 +5,15 @@ import ProductFilter from './TableFilter'
 import { Link } from 'react-router-dom'
 
 interface propsTableTools {
-    onAddItem: any
+    onAddItem: any,
+    getData: any
 }
 
-const TableTools = ({onAddItem}:propsTableTools) => {
-    
+const TableTools = ({ onAddItem, getData }: propsTableTools) => {
+
     return (
         <div className="flex flex-col lg:flex-row lg:items-center">
-            <ProductTableSearch />
+            <ProductTableSearch getData={getData} />
             <ProductFilter />
             <Link
                 download
@@ -24,14 +25,10 @@ const TableTools = ({onAddItem}:propsTableTools) => {
                     Descargar
                 </Button>
             </Link>
-            {/* <Link
-                className="block lg:inline-block md:mb-0 mb-4"
-                to="/app/sales/product-new"
-            > */}
-                <Button variant="solid" size="sm" icon={<HiPlusCircle />} onClick={onAddItem}>
-                    Crear Nuevo 
-                </Button>
-            {/* </Link> */}
+
+            <Button variant="solid" size="sm" icon={<HiPlusCircle />} onClick={onAddItem}>
+                Crear Nuevo
+            </Button>
         </div>
     )
 }

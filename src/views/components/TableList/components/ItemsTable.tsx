@@ -50,14 +50,11 @@ type Columns = {
     type: eTypeColumns
 }
 
-const ActionColumn = ({ row }: { row: any }) => {
+const ActionColumn = ({ row, onEdit }: { row: any, onEdit: any }) => {
     const dispatch = useAppDispatch()
     const { textTheme } = useThemeClass()
     const navigate = useNavigate()
 
-    const onEdit = () => {
-        navigate(`/app/sales/product-edit/${row.id}`)
-    }
 
     const onDelete = () => {
         dispatch(toggleDeleteConfirmation(true))
@@ -65,11 +62,15 @@ const ActionColumn = ({ row }: { row: any }) => {
         console.log('ELIMINANDO...');
     }
 
+    const edit = () => {
+        onEdit(row);
+    }
+
     return (
         <div className="flex justify-end text-lg">
             <span
                 className={`cursor-pointer p-2 hover:${textTheme}`}
-                onClick={onEdit}
+                onClick={edit}
             >
                 <HiOutlinePencil />
             </span>
@@ -102,9 +103,10 @@ interface ItemsTableProps<T> {
     deleteMessage: string;
     dataList: T[];
     columnsList: Columns[];
+    onEdit: any;
 }
 
-const ItemsTable = <T,>({ deleteMessage, dataList, columnsList }: ItemsTableProps<T>) => {
+const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsTableProps<T>) => {
     const tableRef = useRef<DataTableResetHandle>(null)
 
     const dispatch = useAppDispatch()
@@ -172,11 +174,11 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList }: ItemsTableProp
                                 ) 
                                 
                             case eTypeColumns.BADGE:
-                                console.log(row[col.key])
+                                
                                 return (<div className="flex items-center gap-2">
                                     <Badge
                                         type='big'
-                                        className={"bg-" + [row[col.key]]}
+                                        className={"bg-" + row[col.key] + '-500'}
                                     />
                                 </div>)
                             case eTypeColumns.IMAGE:
@@ -203,7 +205,7 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList }: ItemsTableProp
             finalColumns.push({
                 header: '',
                 id: 'action',
-                cell: (props: any) => <ActionColumn row={props.row.original} />,
+                cell: (props: any) => <ActionColumn row={props.row.original} onEdit={onEdit} />,
             },)
 
             return finalColumns;

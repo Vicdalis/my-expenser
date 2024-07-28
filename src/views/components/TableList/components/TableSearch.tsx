@@ -12,7 +12,7 @@ import cloneDeep from 'lodash/cloneDeep'
 import type { TableQueries } from '@/@types/common'
 import type { ChangeEvent } from 'react'
 
-const TableSearch = () => {
+const TableSearch = (getData : any) => {
     const dispatch = useAppDispatch()
 
     const searchInput = useRef(null)
@@ -27,21 +27,24 @@ const TableSearch = () => {
         const newTableData = cloneDeep(tableData)
         newTableData.query = val
         newTableData.pageIndex = 1
+        console.log("🚀 ~ handleDebounceFn ~ newTableData:", newTableData)
         if (typeof val === 'string' && val.length > 1) {
             fetchData(newTableData)
         }
 
         if (typeof val === 'string' && val.length === 0) {
-            fetchData(newTableData)
+            fetchData(newTableData) 
         }
     }
 
     const fetchData = (data: TableQueries) => {
+        
         dispatch(setTableData(data))
-        dispatch(getProducts(data))
+        dispatch(getData(data))
     }
 
     const onEdit = (e: ChangeEvent<HTMLInputElement>) => {
+        console.log("🚀 ~ onEdit ~ e.target.value:", e.target.value)
         debounceFn(e.target.value)
     }
 

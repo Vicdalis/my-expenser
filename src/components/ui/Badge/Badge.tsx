@@ -28,8 +28,6 @@ const Badge = forwardRef<HTMLElement, BadgeProps>((props, ref) => {
     const badgeType = type === 'big' ? 'big-badge-dot' : 'badge-dot';
 
     const badgeClass = classNames(dot ? badgeType : 'badge', innerClass)
-    console.log("🚀 ~ Badge ~ badgeClass:", badgeClass)
-    console.log(className);
 
     const renderBadge = () => {
         if (children) {

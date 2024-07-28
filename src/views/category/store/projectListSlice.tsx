@@ -1,29 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import {
-    apiGetScrumBoardtMembers,
-} from '@/services/CategoryService'
 import {db} from '@/configs/firebase.config';
-import { collection, getDoc, doc, addDoc, getDocs, query, where } from 'firebase/firestore/lite';
-
-type Member = {
-    id: string
-    name: string
-    email: string
-    img: string
-}
+import { collection, getDoc, doc, setDoc, addDoc, getDocs, query, where } from 'firebase/firestore/lite';
 
 type Colors = {
     label: string,
     value: string
 }
 
-type Category = {
+export type Category = {
     id: string
     name: string
-    icon: string
     color: string
     type: string
-    status?: boolean
+    is_active?: boolean
+    is_archived?: boolean
 }
 
 export type CategoryList = Category[]
@@ -35,21 +25,16 @@ type Query = {
 
 type GetCategoryRequest = Query
 
-type GetScrumBoardtMembersResponse = {
-    allMembers: Member[]
-}
-
 type PutCategoryRequest = {
     name: string
     type: string
     color: string
-    icon: string
-    status: boolean
+    is_active: boolean
+    is_archived?: boolean
+    id?: string
 }
 
-type PutCategoryResponse = CategoryList
-
-export type CategoryState = {
+export type ProjectListState = {
     loading: boolean
     categoryList: Category[]
     view: 'grid' | 'list'
@@ -59,32 +44,22 @@ export type CategoryState = {
 
 export const SLICE_NAME = 'category'
 
+const userId = "UmibcB1i3xQiZA4yyESuDT5eeRp1";
+
 export const getList = createAsyncThunk(
     SLICE_NAME + '/getList',
     async () => {
-        const call = query(collection(db, 'categories'), where("status", "==", true))
-        const snapShot = await getDocs(call);
+        
+        const collect = query(collection(db, `users/${userId}/categories`), where("is_archived", "==", false));
+        
+        const snapShot = await getDocs(collect);
         let finalData: any = [];
         snapShot.forEach((doc) => {
             finalData.push({...doc.data(), id: doc.id});
         })
-
+        
+        console.log("🚀 ~ snapShot.forEach ~ finalData:", finalData)
         return finalData
-    }
-)
-
-export const getMembers = createAsyncThunk(
-    SLICE_NAME + '/getMembers',
-    async () => {
-        const response =
-            await apiGetScrumBoardtMembers<GetScrumBoardtMembersResponse>()
-        const data = response.data.allMembers.map((item: any) => ({
-            value: item.id,
-            label: item.name,
-            img: item.img,
-        }))
-        console.log("🚀 ~ data:", data)
-        return data
     }
 )
 
@@ -95,7 +70,6 @@ export const getColors = createAsyncThunk(
         let colors: Colors[] = [];
 
         if(colorsDoc.exists()){
-            console.log("🚀 ~ colorsDoc.data():", colorsDoc.data())
             colors = colorsDoc.data().items as Colors[];
         }else{
              console.log('El documento consultado no existe');
@@ -108,13 +82,16 @@ export const getColors = createAsyncThunk(
 export const putCategory = createAsyncThunk(
     SLICE_NAME + '/putCategory',
     async (data: PutCategoryRequest) => {
-        const response = await addDoc(collection(db, "categories"), data);
-        const savedData = {...data, id: response.id}
+        console.log("🚀 ~ data:", data)
+        const document = data.id ? doc(db, `users/${userId}/categories/${data.id}`) : doc(db, `users/${userId}/categories`);
+        await setDoc(document, data);
+        const savedData = {...data, id: document.id}
+        console.log("🚀 ~ savedData:", savedData)
         return savedData
     }
 )
 
-const initialState: CategoryState = {
+const initialState: ProjectListState = {
     loading: false,
     categoryList: [],
     view: 'grid',
@@ -125,7 +102,7 @@ const initialState: CategoryState = {
     newProjectDialog: false,
 }
 
-const categorySlice = createSlice({
+const projectListSlice = createSlice({
     name: `${SLICE_NAME}/state`,
     initialState,
     reducers: {
@@ -144,20 +121,30 @@ const categorySlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+            .addCase(getList.pending, (state) => {
+                state.loading = true
+            })
             .addCase(getList.fulfilled, (state, action) => { 
                 state.categoryList = action.payload
                 state.loading = false
             })
-            .addCase(getList.pending, (state) => {
+            .addCase(putCategory.pending, (state) =>{
                 state.loading = true
             })
             .addCase(putCategory.fulfilled, (state, action) => {
-                state.categoryList = [...state.categoryList, ...[action.payload]]
+                const categoryFound = state.categoryList.findIndex((category) => category.id === action.payload.id);
+                console.log("🚀 ~ .addCase ~ categoryFound:", categoryFound)
+                if(categoryFound != -1){
+                    state.categoryList[categoryFound] = action.payload;
+                }else{
+                    state.categoryList = [...state.categoryList, ...[action.payload]]
+                }
+
             })
     },
 })
 
 export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch } =
-categorySlice.actions
+projectListSlice.actions
 
-export default categorySlice.reducer
+export default projectListSlice.reducer
