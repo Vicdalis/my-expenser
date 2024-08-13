@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import Input from '@/components/ui/Input'
 import { HiOutlineSearch } from 'react-icons/hi'
 import {
@@ -13,33 +13,42 @@ import type { TableQueries } from '@/@types/common'
 import type { ChangeEvent } from 'react'
 
 const TableSearch = (getData : any) => {
+
     const dispatch = useAppDispatch()
 
     const searchInput = useRef(null)
 
-    const tableData = useAppSelector(
-        (state) => state.salesProductList.data.tableData
-    )
-
     const debounceFn = debounce(handleDebounceFn, 500)
 
     function handleDebounceFn(val: string) {
-        const newTableData = cloneDeep(tableData)
-        newTableData.query = val
-        newTableData.pageIndex = 1
-        console.log("🚀 ~ handleDebounceFn ~ newTableData:", newTableData)
-        if (typeof val === 'string' && val.length > 1) {
-            fetchData(newTableData)
-        }
+        console.log("🚀 ~ handleDebounceFn ~ val:", val)
+        // const newTableData = cloneDeep(tableData)
+        // newTableData.query = val
+        // newTableData.pageIndex = 1
+        // console.log("🚀 ~ handleDebounceFn ~ newTableData:", newTableData)
+        // if (typeof val === 'string' && val.length > 1) {
+        //     fetchData(newTableData)
+        // }
 
-        if (typeof val === 'string' && val.length === 0) {
-            fetchData(newTableData) 
+        // if (typeof val === 'string' && val.length === 0) {
+        //     fetchData(newTableData) 
+        // }
+
+        if (typeof val === 'string' && (val.length > 1 || val.length === 0)) {
+            setTableData((prevData: any) => ({
+                ...prevData,
+                ...{ query: val, pageIndex: 1 },
+            }))
         }
+    }
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        debounceFn(e.target.value)
     }
 
     const fetchData = (data: TableQueries) => {
         
-        dispatch(setTableData(data))
+        // dispatch(setTableData(data))
         dispatch(getData(data))
     }
 
@@ -55,7 +64,7 @@ const TableSearch = (getData : any) => {
             size="sm"
             placeholder="Buscar..."
             prefix={<HiOutlineSearch className="text-lg" />}
-            onChange={onEdit}
+            onChange={handleChange}
         />
     )
 }

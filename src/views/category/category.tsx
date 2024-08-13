@@ -3,9 +3,10 @@ import HeaderComponent from "../components/HeaderComponent";
 import ModalComponent from "../components/ModalComponent";
 import TableComponent from "../components/TableList";
 import CategoryForm from "./CategoryForm";
-import reducer, { useAppSelector, useAppDispatch, getList, Category } from "./store";
+import reducer, { useAppSelector, useAppDispatch, getCategoryList, Category } from "./store";
 import { injectReducer } from '@/store'
 import { Loading } from "@/components/shared";
+import { setTableData } from "../components/TableList/store";
 
 injectReducer('category', reducer)
 
@@ -35,10 +36,23 @@ const CategoryView = () => {
         (state) => state.category?.data?.loading ?? false
     )
 
-    const data = useAppSelector((state) => state.category?.data?.categoryList ?? [])
+    const data = useAppSelector((state) => {
+        const dataList = state.category?.data?.categoryList ?? [];
+
+        setTableData((prevData: any) => ({
+            ...prevData,
+            ...{ total: dataList.length, pageIndex: 1 },
+        }))
+
+        
+
+        return dataList;
+    })
+
+    
 
     useEffect(() => {   
-        dispatch(getList());
+        dispatch(getCategoryList());
     }, [])
 
     const columns = [
@@ -70,7 +84,7 @@ const CategoryView = () => {
         <div>
             {/* <Loading loading={loading} > */}
                 <HeaderComponent title="Categorías" subtitle="Administra tus categorías de gastos" />
-                <TableComponent getDataOnSearch={getList} columns={columns} data={data} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
+                <TableComponent getDataOnSearch={getCategoryList} columns={columns} data={data} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
                 <ModalComponent openModal={openModal} title="Nueva Categoría" onClose={onClose}>
                     <CategoryForm dataForm={editingValues} closeModal={onClose}></CategoryForm>
                 </ModalComponent>

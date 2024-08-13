@@ -30,13 +30,13 @@ type FilterQueries = {
     productStatus: number
 }
 
-export type SalesProductListState = {
+export type DataListState = {
     loading: boolean
     deleteConfirmation: boolean
     selectedProduct: string
     tableData: TableQueries
     filterData: FilterQueries
-    productList: Product[]
+    dataList: any[]
 }
 
 type GetSalesProductsRequest = TableQueries & { filterData?: FilterQueries }
@@ -73,11 +73,11 @@ export const initialTableData: TableQueries = {
     },
 }
 
-const initialState: SalesProductListState = {
+const initialState: DataListState = {
     loading: false,
     deleteConfirmation: false,
     selectedProduct: '',
-    productList: [],
+    dataList: [],
     tableData: initialTableData,
     filterData: {
         name: '',
@@ -87,12 +87,12 @@ const initialState: SalesProductListState = {
     },
 }
 
-const productListSlice = createSlice({
+const tableSlice = createSlice({
     name: `${SLICE_NAME}/state`,
     initialState,
     reducers: {
         updateProductList: (state, action) => {
-            state.productList = action.payload
+            state.dataList = action.payload
         },
         setTableData: (state, action) => {
             state.tableData = action.payload
@@ -110,7 +110,7 @@ const productListSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(getProducts.fulfilled, (state, action) => {
-                state.productList = action.payload.data
+                state.dataList = action.payload.data
                 state.tableData.total = action.payload.total
                 state.loading = false
             })
@@ -126,6 +126,6 @@ export const {
     setFilterData,
     toggleDeleteConfirmation,
     setSelectedProduct,
-} = productListSlice.actions
+} = tableSlice.actions
 
-export default productListSlice.reducer
+export default tableSlice.reducer

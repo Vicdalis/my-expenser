@@ -125,8 +125,20 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
 
     const data = dataList;
 
+    const tableData = useMemo(
+        () => ({ pageIndex, pageSize, sort, query, total }),
+        [pageIndex, pageSize, sort, query, total]
+    )
+
+    const tableDataTest = useAppSelector(
+        (state) => {
+            console.log(state.salesProductList.data.tableData)
+            return state.salesProductList.data.tableData
+        }
+    )
+
     useEffect(() => {
-        fetchData()
+        // fetchData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pageIndex, pageSize, sort])
 
@@ -135,12 +147,6 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
             tableRef.current?.resetSorting()
         }
     }, [filterData])
-
-    const tableData = useMemo(
-        () => ({ pageIndex, pageSize, sort, query, total }),
-        [pageIndex, pageSize, sort, query, total]
-    )
-
     const fetchData = () => {
         dispatch(getProducts({ pageIndex, pageSize, sort, query, filterData }))
     }

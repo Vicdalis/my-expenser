@@ -46,7 +46,7 @@ export const SLICE_NAME = 'category'
 
 const userId = "UmibcB1i3xQiZA4yyESuDT5eeRp1";
 
-export const getList = createAsyncThunk(
+export const getCategoryList = createAsyncThunk(
     SLICE_NAME + '/getList',
     async () => {
         
@@ -121,10 +121,10 @@ const projectListSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getList.pending, (state) => {
+            .addCase(getCategoryList.pending, (state) => {
                 state.loading = true
             })
-            .addCase(getList.fulfilled, (state, action) => { 
+            .addCase(getCategoryList.fulfilled, (state, action) => { 
                 state.categoryList = action.payload
                 state.loading = false
             })
