@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import HeaderExpenses from "./HeaderExpenses";
 import SalesByCategories from "../dashboard/SalesByCategories";
 import TableComponent from "../components/TableList";
 import { setTableData } from "../components/TableList/store";
 import ModalComponent from "../components/ModalComponent";
-import { Expense, useAppSelector } from "./store";
+import reducer, { Expense, getExpenseList, useAppSelector, useAppDispatch } from "./store";
 import ExpenseForm from "./ExpenseForm";
+import { injectReducer } from "@/store";
+import ErrorModalComponent from "../components/Modals/ErrorModalComponent";
+import { Columns, eTypeColumns } from "../components/TableList/components/ItemsTable";
+
+injectReducer('expense', reducer)
 
 const ExpensesView = () => {
     const [expensesCategories, setCategories] = useState({
@@ -13,15 +18,16 @@ const ExpensesView = () => {
         data: [351, 246, 144, 83],
     });
     const [openModal, setOpenModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
     const [editingValues, setEditingValues] = useState<Expense>()
 
+    const dispatch = useAppDispatch()
+
     const onCreate = () => {
-        console.log('CREANDO ITEM ')
         setOpenModal(true);
     }
 
     const onClose = () => {
-        console.log('CERRANDO POPUP')
         setOpenModal(false);
         setEditingValues(undefined)
     }
@@ -31,6 +37,15 @@ const ExpensesView = () => {
         setOpenModal(true);
         setEditingValues(row)
     }
+
+    useEffect(() => {   
+        dispatch(getExpenseList()).then((result) => {
+            console.log("🚀 ~ dispatch ~ result:", result)
+            if(result.payload === null){
+                setShowErrorModal(true)
+            }
+        });
+    }, [])
 
     const data = useAppSelector((state) => {
         const dataList = state.expense?.data?.expenseList ?? [];
@@ -43,32 +58,32 @@ const ExpensesView = () => {
         return dataList;
     });
 
-    const columns = [
+    const columns: Columns[] = [
         { 
             id: 'name',
             name: 'Nombre',
-            key: 'name',
-            type: 'text'
+            key: 'description',
+            type: eTypeColumns.TEXT
         },{
             id: 'category',
             name: 'Categoría',
-            key: 'type',
-            type: 'text_badge'
+            key: 'category_name',
+            type: eTypeColumns.TEXT
         },{
             id: 'status',
             name: 'Estatus',
             key: 'is_active',
-            type: 'text_badge'
+            type: eTypeColumns.TEXT_BADGE
         },{
-            id: 'ammount',
+            id: 'amount',
             name: 'Monto',
-            key: 'ammount',
-            type: 'text'
+            key: 'amount',
+            type: eTypeColumns.CURRENCY
         },{
             id: 'date',
             name: 'Fecha',
             key: 'date',
-            type: 'text'
+            type: eTypeColumns.DATE
         }
     ];
     
@@ -88,6 +103,9 @@ const ExpensesView = () => {
                 <ModalComponent openModal={openModal} title="Agregar Gasto" onClose={onClose}>
                     <ExpenseForm  closeModal={onClose}></ExpenseForm>
                 </ModalComponent>
+                {showErrorModal && 
+                    <ErrorModalComponent openModal={showErrorModal} onCloseModal={ () => setShowErrorModal(false)} />
+                }
         </React.Fragment>
     )
 }

@@ -34,6 +34,11 @@ type PutCategoryRequest = {
     id?: string
 }
 
+export enum eCategoryTypes {
+    GASTOS = "Gastos",
+    INGRESOS = "Ingresos"
+}
+
 export type ProjectListState = {
     loading: boolean
     categoryList: Category[]
@@ -45,6 +50,23 @@ export type ProjectListState = {
 export const SLICE_NAME = 'category'
 
 const userId = "UmibcB1i3xQiZA4yyESuDT5eeRp1";
+
+export const getCategoryListByType = createAsyncThunk(
+    SLICE_NAME + '/getList',
+    async (type: eCategoryTypes) => {
+        
+        const collect = query(collection(db, `users/${userId}/categories`), where("is_archived", "==", false), where("is_active", "==", true), where("type", "==", type));
+        
+        const snapShot = await getDocs(collect);
+        let finalData: any = [];
+        snapShot.forEach((doc) => {
+            finalData.push({...doc.data(), id: doc.id});
+        })
+        
+        console.log("🚀 ~ snapShot.forEach ~ finalData:", finalData)
+        return finalData
+    }
+)
 
 export const getCategoryList = createAsyncThunk(
     SLICE_NAME + '/getList',
@@ -82,12 +104,22 @@ export const getColors = createAsyncThunk(
 export const putCategory = createAsyncThunk(
     SLICE_NAME + '/putCategory',
     async (data: PutCategoryRequest) => {
-        console.log("🚀 ~ data:", data)
-        const document = data.id ? doc(db, `users/${userId}/categories/${data.id}`) : doc(db, `users/${userId}/categories`);
-        await setDoc(document, data);
-        const savedData = {...data, id: document.id}
-        console.log("🚀 ~ savedData:", savedData)
-        return savedData
+        try {
+            let document;
+            if(data.id){
+                document = doc(db, `users/${userId}/categories/${data.id}`)
+                await setDoc(document, data);
+            }else{
+                document = collection(db, `users/${userId}/categories`);
+                await addDoc(document, data);
+            }
+            
+            const savedData = {...data, id: document.id}
+            return savedData
+        } catch (error) {
+            console.log("🚀 ~ error:", error)
+            return null
+        }
     }
 )
 
@@ -132,12 +164,14 @@ const projectListSlice = createSlice({
                 state.loading = true
             })
             .addCase(putCategory.fulfilled, (state, action) => {
-                const categoryFound = state.categoryList.findIndex((category) => category.id === action.payload.id);
-                console.log("🚀 ~ .addCase ~ categoryFound:", categoryFound)
-                if(categoryFound != -1){
-                    state.categoryList[categoryFound] = action.payload;
-                }else{
-                    state.categoryList = [...state.categoryList, ...[action.payload]]
+                if(action.payload){
+                    const categoryFound = state.categoryList.findIndex((category) => category.id === action.payload!.id);
+                    console.log("🚀 ~ .addCase ~ categoryFound:", categoryFound)
+                    if(categoryFound != -1){
+                        state.categoryList[categoryFound] = action.payload;
+                    }else{
+                        state.categoryList = [...state.categoryList, ...[action.payload]]
+                    }
                 }
 
             })

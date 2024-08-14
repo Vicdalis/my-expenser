@@ -5,41 +5,38 @@ import Button from '@/components/ui/Button'
 import Select from '@/components/ui/Select'
 import hooks from '@/components/ui/hooks'
 import { Field, FieldProps, Form, Formik } from 'formik'
-import { HiCheck, HiCheckCircle } from 'react-icons/hi'
+import { HiCheck } from 'react-icons/hi'
 import { components } from 'react-select'
-// import {
-//     getColors,
-//     putCategory,
-//     toggleNewProjectDialog,
-//     useAppDispatch,
-//     Category,
-// } from './store'
 import * as Yup from 'yup'
-import Segment from '@/components/ui/Segment'
-import classNames from 'classnames'
 import Switcher from '@/components/ui/Switcher'
 import { Expense, putExpense, useAppDispatch } from './store'
 import { Timestamp } from 'firebase/firestore/lite'
 import DatePicker from '@/components/ui/DatePicker'
-import { Category, getCategoryList } from '../category/store'
+import { Category, eCategoryTypes, getCategoryListByType } from '../category/store'
 import Badge from '@/components/ui/Badge'
-import Control from 'react-select/dist/declarations/src/components/Control'
+
+import type {
+    ControlProps,
+} from 'react-select';
+
+const { Control } = components
+
+type Option = {
+    value: string
+    label: string
+    color: string
+}
 
 type FormModel = {
     description: string
     category: string
+    category_name: string
     amount: number
     date: Timestamp | null
     id?: string
     is_active: boolean
 }
 
-interface iColor {
-    label: string;
-    value: string;
-}
-
-const { MultiValueLabel } = components
 
 const { useUniqueId } = hooks
 
@@ -54,7 +51,7 @@ const validationSchema = Yup.object().shape({
 const CustomSelectCategoryOption = ({ innerProps, label, data, isSelected }: { innerProps: any, label: string, data: any, isSelected: boolean }) => {
     return (
         <div
-            className={`flex items-center justify-between p-2 ${
+            className={`flex items-center justify-between p-2 cursor-pointer ${
                 isSelected
                     ? 'bg-gray-100 dark:bg-gray-500'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -66,38 +63,43 @@ const CustomSelectCategoryOption = ({ innerProps, label, data, isSelected }: { i
                                         type='big'
                                         className={"bg-" + data.color + '-500'}
                                     />
-                <span className="ml-2 rtl:mr-2">{data.name}</span>
+                <span className="ml-2 rtl:mr-2">{label}</span>
             </div>
             {isSelected && <HiCheck className="text-emerald-500 text-xl" />}
         </div>
     )
 }
 
-// const CustomCategoryControl = ({ children, ...props }: { children: any, }) => {
-//     const selected = props.getValue()[0]
-//     return (
-//         <Control {...props}>
-//             {selected && (
-//                 <Badge
-//                     type='big'
-//                     className={"bg-" + selected.color + '-500'}
-//                 />
-//             )}
-//             {children}
-//         </Control>
-//     )
-// }
+const CustomCategoryControl = ({ children, ...props }: ControlProps<Option>) => {
+    const selected = props.getValue()[0]
+    return (
+        <Control {...props} className='cursor-pointer'>
+            {selected && (
+                <Badge
+                type='big'
+                className={"ml-2 bg-" + selected.color + '-500'}
+            />
+            )}
+            {children}
+        </Control>
+    )
+}
 
 const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Expense }) => {
     const dispatch = useAppDispatch()
 
-
-    const [categoryOptions, setCategories] = useState<Category[]>([])
+    const [categoryOptions, setCategories] = useState<Option[]>([])
 
     useEffect(() => {
-        dispatch(getCategoryList()).then((result: any) => {
-            console.log("🚀 ~ dispatch ~ result:", result)
-            setCategories(result.payload);
+        dispatch(getCategoryListByType(eCategoryTypes.GASTOS)).then((result: any) => {
+            
+            const categories = result.payload.map((category: Category) => {return {
+                value: category.id,
+                label: category.name,
+                color: category.color
+            }})
+            
+            setCategories(categories);
         })
     }, [dispatch])
 
@@ -107,28 +109,25 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
     ) => {
         console.log('GUARDANDO ');
         setSubmitting(true)
-        const { description, category, is_active } = formValue
+        const { description, category, category_name, date, amount, is_active } = formValue
 
         const values = {
             description: description,
             category_id: category,
-            category_name: '',
-            date: Timestamp.now(),
-            amount: 0,
+            category_name: category_name,
+            date: date,
+            amount: amount,
             is_active: is_active,
             is_archived: false,
             ...(dataForm && { id: dataForm.id })
         }
-        console.log("🚀 ~ CategoryForm ~ values:", values)
-        dispatch(putExpense(values))
-        // dispatch(toggleNewProjectDialog(false))
+        
+        dispatch(putExpense(values)).then((saved) => {
+            console.log("🚀 ~ dispatch ~ saved:", saved)
+            
+        })
         closeModal();
     }
-
-    const segmentSelections = [
-        { value: 'Ingresos', disabled: false },
-        { value: 'Gastos', disabled: false },
-    ]
 
     return (
         <Formik
@@ -138,9 +137,11 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                 amount: dataForm?.amount ?? 0,
                 date: dataForm?.date ?? null,
                 is_active: dataForm?.is_active == undefined ? true : dataForm.is_active,
+                category_name: dataForm?.category_name ?? ""
             }}
             validationSchema={validationSchema}
             onSubmit={(values, { setSubmitting }) => {
+                console.log("🚀 ~ ExpenseForm ~ values:", values)
                 
                 onSubmit(values, setSubmitting)
             }}
@@ -171,7 +172,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                                 type="number"
                                 autoComplete="off"
                                 name="amount"
-                                placeholder="0$"
+                                prefix="$"
                                 component={Input}
                             />
                         </FormItem>
@@ -185,7 +186,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                                 <DatePicker field={field}
                                     form={form}
                                     value={field.value} name="date" 
-                                    placeholder="Escoja una fecha" 
+                                    placeholder="Seleccione una fecha" 
                                     onChange={(date) => {
                                         form.setFieldValue(field.name, date)
                                     }}
@@ -195,7 +196,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                         </FormItem>
 
                         <FormItem
-                            label="Category"
+                            label="Categoría"
                             invalid={
                                 (errors.category && touched.category) as ''
                             }
@@ -210,17 +211,20 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                                         
                                         components={{
                                             Option: CustomSelectCategoryOption,
-                                            // Control: CustomCategoryControl,
+                                            Control: CustomCategoryControl,
                                         }}
                                         value={categoryOptions.find(
                                             (option) =>
-                                                option.id ===
+                                                option.value ===
                                                 values.category
                                         )}
-                                        onChange={(val: any) => form.setFieldValue(
+                                        onChange={(val: any) => {form.setFieldValue(
                                             field.name,
                                             val.value
-                                        )}
+                                        ); form.setFieldValue(
+                                            'category_name',
+                                            val.label
+                                        ); console.log(val)}}
                                     ></Select>
                                 )}
                             </Field>

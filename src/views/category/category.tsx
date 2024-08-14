@@ -16,12 +16,10 @@ const CategoryView = () => {
     const dispatch = useAppDispatch()
 
     const onCreate = () => {
-        console.log('CREANDO ITEM ')
         setOpenModal(true);
     }
 
     const onClose = () => {
-        console.log('CERRANDO POPUP')
         setOpenModal(false);
         setEditingValues(undefined)
     }

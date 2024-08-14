@@ -22,27 +22,19 @@ import type {
     OnSortParam,
     ColumnDef,
 } from '@/components/shared/DataTable'
+import dayjs from 'dayjs'
 
-type Product = {
-    id: string
-    name: string
-    productCode: string
-    img: string
-    category: string
-    price: number
-    stock: number
-    status: number
-}
-
-enum eTypeColumns {
+export enum eTypeColumns {
     TEXT = 'text',
     IMAGE = 'image',
     TEXT_IMAGE = 'text_image',
     BADGE = 'badge',
-    TEXT_BADGE = 'text_badge'
+    TEXT_BADGE = 'text_badge',
+    DATE = 'date',
+    CURRENCY = 'currency'
 }
 
-type Columns = {
+export type Columns = {
     id: string
     name: string
     key: string
@@ -132,7 +124,6 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
 
     const tableDataTest = useAppSelector(
         (state) => {
-            console.log(state.salesProductList.data.tableData)
             return state.salesProductList.data.tableData
         }
     )
@@ -194,6 +185,18 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
                                         <Avatar icon={<FiPackage />} />
                                     )
                                 
+                            case eTypeColumns.DATE:
+                                return (
+                                    <div className="flex items-center gap-2">
+                                        { row[col.key]?.seconds && dayjs(new Date(row[col.key].seconds * 1000)).format('DD-MM-YYYY')}
+                                    </div>
+                                )
+                            case eTypeColumns.CURRENCY:
+                                return (
+                                    <div className="flex items-center gap-2">
+                                        {row[col.key]}
+                                    </div>
+                                )
 
                             default:
                                 return (
