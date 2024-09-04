@@ -1,7 +1,7 @@
 import { useState, useRef, forwardRef } from 'react'
 import { HiOutlineFilter, HiOutlineSearch } from 'react-icons/hi'
 import {
-    getProducts,
+    // getProducts,
     setFilterData,
     initialTableData,
     useAppDispatch,
@@ -43,7 +43,7 @@ const FilterForm = forwardRef<FormikProps<FormModel>, FilterFormProps>(
         const handleSubmit = (values: FormModel) => {
             onSubmitComplete?.()
             dispatch(setFilterData(values))
-            dispatch(getProducts(initialTableData))
+            // dispatch(getProducts(initialTableData))
         }
 
         return (

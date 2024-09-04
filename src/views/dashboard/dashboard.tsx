@@ -8,6 +8,7 @@ import TopProduct from "./TopProduct";
 import { getSalesDashboardData, setStartDate, useAppSelector } from "./store";
 import { useAppDispatch } from '@/store'
 import DashboardHeader from "./dashboardHeader";
+import DashboardHeaderButtons from "./dashboardHeaderButtons";
 
 
 const DashboardComponent = () => {
@@ -137,6 +138,7 @@ const DashboardComponent = () => {
         <div className="flex flex-col gap-4 h-full">
             <Loading loading={loading}>
                 <DashboardHeader></DashboardHeader>
+                <DashboardHeaderButtons></DashboardHeaderButtons>
                 <Statistic data={statistics} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <TaskOverview

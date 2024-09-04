@@ -5,7 +5,7 @@ import dayjs from "dayjs";
 import HeaderComponent from "../components/HeaderComponent";
 
 
-const HeaderExpenses = () => {
+const Header = () => {
 
     const monthOptions = [
         { value: 'ocean', label: 'Hoy', color: '#00B8D9' },
@@ -20,7 +20,7 @@ const HeaderExpenses = () => {
     
     return (
         <div>
-            <HeaderComponent title="Gastos" subtitle="Historial de Gastos"> 
+            <HeaderComponent title="Ingresos" subtitle="Historial de Ingresos"> 
                 <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                     <p className="m-3">Filtrar por: </p>
                     <Select
@@ -45,4 +45,4 @@ const HeaderExpenses = () => {
     )
 }
 
-export default HeaderExpenses;
+export default Header;

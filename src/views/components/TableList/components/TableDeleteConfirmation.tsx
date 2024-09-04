@@ -3,13 +3,13 @@ import Notification from '@/components/ui/Notification'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import {
     toggleDeleteConfirmation,
-    deleteProduct,
-    getProducts,
+    // deleteProduct,
+    // getProducts,
     useAppDispatch,
     useAppSelector,
 } from '../store'
 
-const TableDeleteConfirmation = ({deleteMessage}: {deleteMessage: string}) => {
+const TableDeleteConfirmation = ({deleteMessage, onDeleteAction}: {deleteMessage: string, onDeleteAction: any}) => {
     const dispatch = useAppDispatch()
     const dialogOpen = useAppSelector(
         (state) => state.salesProductList.data.deleteConfirmation
@@ -17,9 +17,9 @@ const TableDeleteConfirmation = ({deleteMessage}: {deleteMessage: string}) => {
     const selectedProduct = useAppSelector(
         (state) => state.salesProductList.data.selectedProduct
     )
-    const tableData = useAppSelector(
-        (state) => state.salesProductList.data.tableData
-    )
+    // const tableData = useAppSelector(
+    //     (state) => state.salesProductList.data.tableData
+    // )
 
     const onDialogClose = () => {
         dispatch(toggleDeleteConfirmation(false))
@@ -27,23 +27,25 @@ const TableDeleteConfirmation = ({deleteMessage}: {deleteMessage: string}) => {
 
     const onDelete = async () => {
         dispatch(toggleDeleteConfirmation(false))
-        const success = await deleteProduct({ id: selectedProduct })
+        // const success = await deleteProduct({ id: selectedProduct })
 
-        if (success) {
-            dispatch(getProducts(tableData))
-            toast.push(
-                <Notification
-                    title={'Successfuly Deleted'}
-                    type="success"
-                    duration={2500}
-                >
-                    Eliminado exitosamente! 
-                </Notification>,
-                {
-                    placement: 'top-center',
-                }
-            )
-        }
+        // if (success) {
+        //     dispatch(getProducts(tableData))
+        //     toast.push(
+        //         <Notification
+        //             title={'Successfuly Deleted'}
+        //             type="success"
+        //             duration={2500}
+        //         >
+        //             Eliminado exitosamente! 
+        //         </Notification>,
+        //         {
+        //             placement: 'top-center',
+        //         }
+        //     )
+        // }
+
+        onDeleteAction(selectedProduct);
     }
 
     return (

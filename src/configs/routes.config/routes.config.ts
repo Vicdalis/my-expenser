@@ -20,7 +20,7 @@ export const protectedRoutes = [
     {
         key: 'incomes',
         path: '/incomes',
-        component: lazy(() => import('@/views/incomes')),
+        component: lazy(() => import('@/views/incomes/incomes')),
         authority: [],
     },
     {

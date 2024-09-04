@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import Input from '@/components/ui/Input'
 import { HiOutlineSearch } from 'react-icons/hi'
 import {
-    getProducts,
+    // getProducts,
     setTableData,
     useAppSelector,
     useAppDispatch,

@@ -9,7 +9,7 @@ import { HiCheck } from 'react-icons/hi'
 import { components } from 'react-select'
 import * as Yup from 'yup'
 import Switcher from '@/components/ui/Switcher'
-import { Expense, putExpense, useAppDispatch } from './store'
+import { Income, putExpense, useAppDispatch } from './store'
 import { Timestamp } from 'firebase/firestore/lite'
 import DatePicker from '@/components/ui/DatePicker'
 import { Category, eCategoryTypes, getCategoryListByType } from '../category/store'
@@ -35,6 +35,7 @@ type FormModel = {
     amount: number
     date: Timestamp | null
     id?: string
+    is_active: boolean
 }
 
 
@@ -85,7 +86,7 @@ const CustomCategoryControl = ({ children, ...props }: ControlProps<Option>) => 
     )
 }
 
-const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Expense }) => {
+const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Income }) => {
     
     const dispatch = useAppDispatch()
 
@@ -110,7 +111,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
     ) => {
         console.log('GUARDANDO ');
         setSubmitting(true)
-        const { description, category, category_name, date, amount } = formValue
+        const { description, category, category_name, date, amount, is_active } = formValue
 
         const values = {
             description: description,
@@ -118,7 +119,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
             category_name: category_name,
             date: date,
             amount: amount,
-            is_active: true,
+            is_active: is_active,
             is_archived: false,
             ...(dataForm && { id: dataForm.id })
         }
@@ -135,6 +136,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                 category: dataForm?.category_id ?? "",
                 amount: dataForm?.amount ?? 0,
                 date: dataForm?.date ?? null,
+                is_active: dataForm?.is_active == undefined ? true : dataForm.is_active,
                 category_name: dataForm?.category_name ?? ""
             }}
             validationSchema={validationSchema}
@@ -226,6 +228,30 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                                 )}
                             </Field>
                         </FormItem>
+                                {
+                                    dataForm &&
+                                        <FormItem label='Activo' invalid={(errors.is_active && touched.is_active) as ''}>
+                                            <div>
+                                                <div className="mb-4">
+                                                <Field name="is_active">
+                                                    {({ field, form }: FieldProps<FormModel>) => (
+                                                        <Switcher name='is_active' defaultChecked={field.value as unknown as boolean} color="green-500" 
+                                                            onChange={(val) => {
+                                                                
+                                                                console.log("🚀 ~ CategoryForm ~ val:", val)
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    val
+                                                                )
+                                                            }}
+                                                        />
+                                                        )}
+                                                    </Field>
+
+                                                </div>
+                                            </div>
+                                        </FormItem>
+                                }
 
                         <Button block variant="solid" type="submit">
                             Guardar
@@ -237,4 +263,4 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
     )
 }
 
-export default ExpenseForm
+export default IncomeForm

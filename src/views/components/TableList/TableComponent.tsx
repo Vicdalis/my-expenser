@@ -7,11 +7,11 @@ import ProductTableTools from './components/TableTools'
 injectReducer('salesProductList', reducer)
 
 interface tableProps<T> {
-    data: T[],
     columns: any[],
     onAddItem: any,
     deleteMessage: string | undefined,
     onEdit: any,
+    onDelete: any,
     getDataOnSearch: any
 }
 
@@ -22,7 +22,7 @@ const TableComponent = <T,>(props: tableProps<T>) => {
                 <h3 className="mb-4 lg:mb-0"></h3>
                 <ProductTableTools getData={props.getDataOnSearch} onAddItem={props.onAddItem} />
             </div>
-            <Table onEdit={props.onEdit} columnsList={props.columns} dataList={props.data} deleteMessage={props.deleteMessage ? props.deleteMessage : '¿Está seguro de que desea eliminar este registro?'} />
+            <Table onEdit={props.onEdit} onDelete={props.onDelete} columnsList={props.columns} deleteMessage={props.deleteMessage ? props.deleteMessage : '¿Está seguro de que desea eliminar este registro?'} />
         </AdaptableCard>
     )
 }

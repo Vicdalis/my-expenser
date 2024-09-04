@@ -5,7 +5,7 @@ import DataTable from '@/components/shared/DataTable'
 import { HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi'
 import { FiPackage } from 'react-icons/fi'
 import {
-    getProducts,
+    // getProducts,
     setTableData,
     setSelectedProduct,
     toggleDeleteConfirmation,
@@ -23,6 +23,7 @@ import type {
     ColumnDef,
 } from '@/components/shared/DataTable'
 import dayjs from 'dayjs'
+import { useSelector } from 'react-redux'
 
 export enum eTypeColumns {
     TEXT = 'text',
@@ -93,12 +94,12 @@ const Column = ({ row }: { row: { img?: string, name: string } }) => {
 
 interface ItemsTableProps<T> {
     deleteMessage: string;
-    dataList: T[];
     columnsList: Columns[];
     onEdit: any;
+    onDelete: any;
 }
 
-const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsTableProps<T>) => {
+const ItemsTable = <T,>({ deleteMessage, columnsList, onEdit, onDelete }: ItemsTableProps<T>) => {
     const tableRef = useRef<DataTableResetHandle>(null)
 
     const dispatch = useAppDispatch()
@@ -115,16 +116,14 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
         (state) => state.salesProductList.data.loading
     )
 
-    const data = dataList;
-
     const tableData = useMemo(
         () => ({ pageIndex, pageSize, sort, query, total }),
         [pageIndex, pageSize, sort, query, total]
     )
 
-    const tableDataTest = useAppSelector(
+    const data = useAppSelector(
         (state) => {
-            return state.salesProductList.data.tableData
+            return state.salesProductList.data.dataList
         }
     )
 
@@ -138,8 +137,9 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
             tableRef.current?.resetSorting()
         }
     }, [filterData])
+
     const fetchData = () => {
-        dispatch(getProducts({ pageIndex, pageSize, sort, query, filterData }))
+        // dispatch(getProducts({ pageIndex, pageSize, sort, query, filterData }))
     }
 
     const columns: ColumnDef<any>[] = useMemo(
@@ -188,7 +188,7 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
                             case eTypeColumns.DATE:
                                 return (
                                     <div className="flex items-center gap-2">
-                                        { row[col.key]?.seconds && dayjs(new Date(row[col.key].seconds * 1000)).format('DD-MM-YYYY')}
+                                        { row[col.key] && dayjs(new Date(row[col.key])).format('DD-MM-YYYY')}
                                     </div>
                                 )
                             case eTypeColumns.CURRENCY:
@@ -260,7 +260,7 @@ const ItemsTable = <T,>({ deleteMessage, dataList, columnsList, onEdit }: ItemsT
                 onSelectChange={onSelectChange}
                 onSort={onSort}
             />
-            <DeleteConfirmation deleteMessage={deleteMessage} />
+            <DeleteConfirmation deleteMessage={deleteMessage} onDeleteAction={onDelete}/>
         </>
     )
 }

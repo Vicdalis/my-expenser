@@ -4,16 +4,19 @@ import ModalComponent from "../components/ModalComponent";
 import TableComponent from "../components/TableList";
 import CategoryForm from "./CategoryForm";
 import reducer, { useAppSelector, useAppDispatch, getCategoryList, Category } from "./store";
-import { injectReducer } from '@/store'
+import { injectReducer, useAppDispatch as useGlobalDispatch  } from '@/store'
 import { Loading } from "@/components/shared";
-import { setTableData } from "../components/TableList/store";
+import { updateProductList } from "../components/TableList/store";
 
 injectReducer('category', reducer)
 
 const CategoryView = () => {
     const [openModal, setOpenModal] = useState(false);
     const [editingValues, setEditingValues] = useState<Category>()
-    const dispatch = useAppDispatch()
+    const [categoryList, setCategoryList] = useState([]);
+
+    const dispatch = useAppDispatch();
+    const globalDispatch = useGlobalDispatch();
 
     const onCreate = () => {
         setOpenModal(true);
@@ -30,27 +33,19 @@ const CategoryView = () => {
         setEditingValues(row)
     }
 
+    const onDelete = () => {
+
+    }
+
     const loading = useAppSelector(
         (state) => state.category?.data?.loading ?? false
     )
 
-    const data = useAppSelector((state) => {
-        const dataList = state.category?.data?.categoryList ?? [];
-
-        setTableData((prevData: any) => ({
-            ...prevData,
-            ...{ total: dataList.length, pageIndex: 1 },
-        }))
-
-        
-
-        return dataList;
-    })
-
-    
-
     useEffect(() => {   
-        dispatch(getCategoryList());
+        dispatch(getCategoryList()).then((result) => {
+            setCategoryList(result.payload);
+            globalDispatch(updateProductList(result.payload))
+        });
     }, [])
 
     const columns = [
@@ -82,7 +77,7 @@ const CategoryView = () => {
         <div>
             {/* <Loading loading={loading} > */}
                 <HeaderComponent title="Categorías" subtitle="Administra tus categorías de gastos" />
-                <TableComponent getDataOnSearch={getCategoryList} columns={columns} data={data} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
+                <TableComponent onDelete={onDelete} getDataOnSearch={getCategoryList} columns={columns} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
                 <ModalComponent openModal={openModal} title="Nueva Categoría" onClose={onClose}>
                     <CategoryForm dataForm={editingValues} closeModal={onClose}></CategoryForm>
                 </ModalComponent>

@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import {db} from '@/configs/firebase.config';
-import { collection, getDoc, doc, setDoc, addDoc, getDocs, query, where, Timestamp, deleteDoc } from 'firebase/firestore/lite';
+import { collection, getDoc, doc, setDoc, addDoc, getDocs, query, where, Timestamp } from 'firebase/firestore/lite';
 import dayjs from 'dayjs';
 
-export type Expense = {
+export type Income = {
     id: string
     amount: number
     category_id: string
@@ -14,7 +14,7 @@ export type Expense = {
     is_archived?: boolean
 }
 
-export type ExpensesList = Expense[]
+export type IncomesList = Income[]
 
 type Query = {
     sort: 'asc' | 'desc' | ''
@@ -31,24 +31,24 @@ type PutExpenseRequest = {
     id?: string
 }
 
-export type ExpensesState = {
+export type IncomesState = {
     loading: boolean
-    expenseList: Expense[]
+    incomesList: Income[]
     view: 'grid' | 'list'
     query: Query
     newProjectDialog: boolean
 }
 
-export const SLICE_NAME = 'expense'
+export const SLICE_NAME = 'income'
 
 const userId = "UmibcB1i3xQiZA4yyESuDT5eeRp1";
 
-export const getExpenseList = createAsyncThunk(
-    SLICE_NAME + '/getExpenseList',
+export const getIncomesList = createAsyncThunk(
+    SLICE_NAME + '/getIncomesList',
     async () => {
         try {
             
-            const collect = query(collection(db, `users/${userId}/expenses`), where("is_archived", "==", false));
+            const collect = query(collection(db, `users/${userId}/incomes`), where("is_archived", "==", false));
             
             const snapShot = await getDocs(collect);
             let finalData: any = [];
@@ -67,15 +67,15 @@ export const getExpenseList = createAsyncThunk(
 )
 
 export const putExpense = createAsyncThunk(
-    SLICE_NAME + '/putExpense',
+    SLICE_NAME + '/putIncomes',
     async (data: PutExpenseRequest) => {
         try {
             let document;
             if(data.id){
-                document = doc(db, `users/${userId}/expenses/${data.id}`)
+                document = doc(db, `users/${userId}/incomes/${data.id}`)
                 await setDoc(document, data);
             }else{
-                document = collection(db, `users/${userId}/expenses`);
+                document = collection(db, `users/${userId}/incomes`);
                 await addDoc(document, data);
             }
             
@@ -92,26 +92,9 @@ export const putExpense = createAsyncThunk(
     }
 )
 
-export const deleteExpense = createAsyncThunk(
-    SLICE_NAME + '/deleteExpense',
-    async (id: string) => {
-        try {
-            let document;
-            
-            document = doc(db, `users/${userId}/expenses/${id}`)
-            await deleteDoc(document)
-            
-            return id
-        } catch (error) {
-            console.log("🚀 ~ error:", error)
-            return null
-        }
-    }
-)
-
-const initialState: ExpensesState = {
+const initialState: IncomesState = {
     loading: false,
-    expenseList: [],
+    incomesList: [],
     view: 'grid',
     query: {
         sort: 'asc',
@@ -120,7 +103,7 @@ const initialState: ExpensesState = {
     newProjectDialog: false,
 }
 
-const expensesSlice = createSlice({
+const incomeSlice = createSlice({
     name: `${SLICE_NAME}/state`,
     initialState,
     reducers: {
@@ -139,11 +122,11 @@ const expensesSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getExpenseList.pending, (state) => {
+            .addCase(getIncomesList.pending, (state) => {
                 state.loading = true
             })
-            .addCase(getExpenseList.fulfilled, (state, action) => { 
-                state.expenseList = action.payload
+            .addCase(getIncomesList.fulfilled, (state, action) => { 
+                state.incomesList = action.payload
                 state.loading = false
             })
             .addCase(putExpense.pending, (state) =>{
@@ -151,13 +134,13 @@ const expensesSlice = createSlice({
             })
             .addCase(putExpense.fulfilled, (state, action) => {
                 if(action.payload){
-                    const expenseFound = state.expenseList.findIndex((expense) => expense.id === action.payload!.id);
+                    const expenseFound = state.incomesList.findIndex((incomes) => incomes.id === action.payload!.id);
                     console.log("🚀 ~ .addCase ~ expenseFound:", expenseFound)
                     
                     if(expenseFound != -1){
-                        state.expenseList[expenseFound] = action.payload;
+                        state.incomesList[expenseFound] = action.payload;
                     }else{
-                        state.expenseList = [...state.expenseList, ...[action.payload]]
+                        state.incomesList = [...state.incomesList, ...[action.payload]]
                     }
                 }
 
@@ -166,6 +149,6 @@ const expensesSlice = createSlice({
 })
 
 export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch } =
-expensesSlice.actions
+incomeSlice.actions
 
-export default expensesSlice.reducer
+export default incomeSlice.reducer

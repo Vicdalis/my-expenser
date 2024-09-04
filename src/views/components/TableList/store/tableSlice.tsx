@@ -39,28 +39,10 @@ export type DataListState = {
     dataList: any[]
 }
 
-type GetSalesProductsRequest = TableQueries & { filterData?: FilterQueries }
+// type GetSalesProductsRequest = TableQueries & { filterData?: FilterQueries }
 
 export const SLICE_NAME = 'salesProductList'
 
-export const getProducts = createAsyncThunk(
-    SLICE_NAME + '/getProducts',
-    async (data: GetSalesProductsRequest) => {
-        const response = await apiGetSalesProducts<
-            GetSalesProductsResponse,
-            GetSalesProductsRequest
-        >(data)
-        return response.data
-    }
-)
-
-export const deleteProduct = async (data: { id: string | string[] }) => {
-    const response = await apiDeleteSalesProducts<
-        boolean,
-        { id: string | string[] }
-    >(data)
-    return response.data
-}
 
 export const initialTableData: TableQueries = {
     total: 0,
@@ -109,14 +91,14 @@ const tableSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(getProducts.fulfilled, (state, action) => {
-                state.dataList = action.payload.data
-                state.tableData.total = action.payload.total
-                state.loading = false
-            })
-            .addCase(getProducts.pending, (state) => {
-                state.loading = true
-            })
+            // .addCase(getProducts.fulfilled, (state, action) => {
+            //     state.dataList = action.payload.data
+            //     state.tableData.total = action.payload.total
+            //     state.loading = false
+            // })
+            // .addCase(getProducts.pending, (state) => {
+            //     state.loading = true
+            // })
     },
 })
 
