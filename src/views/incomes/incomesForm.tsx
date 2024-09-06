@@ -9,7 +9,7 @@ import { HiCheck } from 'react-icons/hi'
 import { components } from 'react-select'
 import * as Yup from 'yup'
 import Switcher from '@/components/ui/Switcher'
-import { Income, putExpense, useAppDispatch } from './store'
+import { Income, putIncome, useAppDispatch } from './store'
 import { Timestamp } from 'firebase/firestore/lite'
 import DatePicker from '@/components/ui/DatePicker'
 import { Category, eCategoryTypes, getCategoryListByType } from '../category/store'
@@ -35,7 +35,6 @@ type FormModel = {
     amount: number
     date: Timestamp | null
     id?: string
-    is_active: boolean
 }
 
 
@@ -93,7 +92,7 @@ const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Inco
     const [categoryOptions, setCategories] = useState<Option[]>([])
 
     useEffect(() => {
-        dispatch(getCategoryListByType(eCategoryTypes.GASTOS)).then((result: any) => {
+        dispatch(getCategoryListByType(eCategoryTypes.INGRESOS)).then((result: any) => {
             
             const categories = result.payload.map((category: Category) => {return {
                 value: category.id,
@@ -109,9 +108,8 @@ const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Inco
         formValue: FormModel,
         setSubmitting: (isSubmitting: boolean) => void
     ) => {
-        console.log('GUARDANDO ');
         setSubmitting(true)
-        const { description, category, category_name, date, amount, is_active } = formValue
+        const { description, category, category_name, date, amount } = formValue
 
         const values = {
             description: description,
@@ -119,12 +117,12 @@ const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Inco
             category_name: category_name,
             date: date,
             amount: amount,
-            is_active: is_active,
+            is_active: true,
             is_archived: false,
             ...(dataForm && { id: dataForm.id })
         }
         
-        dispatch(putExpense(values))
+        dispatch(putIncome(values))
 
         closeModal();
     }
@@ -136,7 +134,6 @@ const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Inco
                 category: dataForm?.category_id ?? "",
                 amount: dataForm?.amount ?? 0,
                 date: dataForm?.date ?? null,
-                is_active: dataForm?.is_active == undefined ? true : dataForm.is_active,
                 category_name: dataForm?.category_name ?? ""
             }}
             validationSchema={validationSchema}
@@ -156,7 +153,7 @@ const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Inco
                                 type="text"
                                 autoComplete="off"
                                 name="description"
-                                placeholder="Descripción de Gasto..."
+                                placeholder="Descripción de Ingreso..."
                                 component={Input}
                             />
                         </FormItem>
@@ -228,30 +225,6 @@ const IncomeForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Inco
                                 )}
                             </Field>
                         </FormItem>
-                                {
-                                    dataForm &&
-                                        <FormItem label='Activo' invalid={(errors.is_active && touched.is_active) as ''}>
-                                            <div>
-                                                <div className="mb-4">
-                                                <Field name="is_active">
-                                                    {({ field, form }: FieldProps<FormModel>) => (
-                                                        <Switcher name='is_active' defaultChecked={field.value as unknown as boolean} color="green-500" 
-                                                            onChange={(val) => {
-                                                                
-                                                                console.log("🚀 ~ CategoryForm ~ val:", val)
-                                                                form.setFieldValue(
-                                                                    field.name,
-                                                                    val
-                                                                )
-                                                            }}
-                                                        />
-                                                        )}
-                                                    </Field>
-
-                                                </div>
-                                            </div>
-                                        </FormItem>
-                                }
 
                         <Button block variant="solid" type="submit">
                             Guardar

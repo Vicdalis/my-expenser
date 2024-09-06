@@ -8,12 +8,17 @@ import { injectReducer, useAppDispatch as useGlobalDispatch  } from '@/store'
 import { Loading } from "@/components/shared";
 import { updateProductList } from "../components/TableList/store";
 
-injectReducer('category', reducer)
+injectReducer('categories', reducer)
+
+interface iCategories{
+    labels: string[],
+    data: number[]
+}
 
 const CategoryView = () => {
     const [openModal, setOpenModal] = useState(false);
     const [editingValues, setEditingValues] = useState<Category>()
-    const [categoryList, setCategoryList] = useState([]);
+    // const [categoriesList, setCategoriesList] = useState<iCategories>();
 
     const dispatch = useAppDispatch();
     const globalDispatch = useGlobalDispatch();
@@ -37,16 +42,20 @@ const CategoryView = () => {
 
     }
 
-    const loading = useAppSelector(
-        (state) => state.category?.data?.loading ?? false
-    )
+    const categoriesList = useAppSelector((state) => state.categories.data.categoryList)
 
     useEffect(() => {   
-        dispatch(getCategoryList()).then((result) => {
-            setCategoryList(result.payload);
-            globalDispatch(updateProductList(result.payload))
-        });
-    }, [])
+        dispatch(getCategoryList());
+    }, [dispatch])
+
+    useEffect(() => {
+        if (categoriesList === null) {
+            
+        }else{
+            globalDispatch(updateProductList(categoriesList))
+        }
+
+    }, [categoriesList, globalDispatch])
 
     const columns = [
         { 
@@ -77,7 +86,7 @@ const CategoryView = () => {
         <div>
             {/* <Loading loading={loading} > */}
                 <HeaderComponent title="Categorías" subtitle="Administra tus categorías de gastos" />
-                <TableComponent onDelete={onDelete} getDataOnSearch={getCategoryList} columns={columns} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
+                <TableComponent onDelete={onDelete} getDataOnSearch={categoriesList} columns={columns} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
                 <ModalComponent openModal={openModal} title="Nueva Categoría" onClose={onClose}>
                     <CategoryForm dataForm={editingValues} closeModal={onClose}></CategoryForm>
                 </ModalComponent>

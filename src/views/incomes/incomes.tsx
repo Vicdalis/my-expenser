@@ -1,21 +1,34 @@
 import React, { useEffect, useState } from "react";
+
 import Header from "./header";
-import SalesByCategories from "../dashboard/SalesByCategories";
+import IncomeForm from "./incomesForm";
+
+import { toast } from "@/components/ui";
+import Notification from '@/components/ui/Notification'
+
 import TableComponent from "../components/TableList";
-import { setTableData, updateProductList } from "../components/TableList/store";
 import ModalComponent from "../components/ModalComponent";
-import reducer, { Income, getIncomesList, useAppSelector, useAppDispatch } from "./store";
-import ExpenseForm from "./incomesForm";
-import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
+import { updateProductList } from "../components/TableList/store";
 import ErrorModalComponent from "../components/Modals/ErrorModalComponent";
 import { Columns, eTypeColumns } from "../components/TableList/components/ItemsTable";
 
+import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
+import reducer, { Income, getIncomesList, useAppSelector, useAppDispatch, deleteIncome } from "./store";
+import SimpleDountChart from "../components/Charts/SimpleDonutChart";
+
 injectReducer('income', reducer)
 
+interface iCategories{
+    labels: string[],
+    data: number[],
+    title: string
+}
+
 const IncomesView = () => {
-    const [expensesCategories, setCategories] = useState({
-        labels: ['Comida', 'Belleza', 'Gym', 'Salud'],
-        data: [351, 246, 144, 83],
+    const [categories, setCategories] = useState<iCategories>({
+        labels: [],
+        data: [],
+        title: 'Ingresos por Categoría'
     });
     const [openModal, setOpenModal] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -38,8 +51,30 @@ const IncomesView = () => {
         setEditingValues(row)
     }
 
-    const onDelete = () => {
+    const onDelete = async (id: string) => {
+        try {
+            const result = await dispatch(deleteIncome(id))
 
+            if(result){
+                dispatch(getIncomesList());
+
+                toast.push(
+                    <Notification
+                        title={'¡Eliminado!'}
+                        type="success"
+                        duration={2500}
+                    >
+                        Eliminado exitosamente!
+                    </Notification>,
+                    {
+                        placement: 'top-center',
+                    }
+                )
+            }
+        } catch (error) {
+            console.error(error);
+            setShowErrorModal(true)
+        }
     }
 
     const incomesList = useAppSelector((state) => state.income.data.incomesList)
@@ -75,7 +110,7 @@ const IncomesView = () => {
             const labels = dataProcesada.map((data: any) => data.category_name);
             const values = dataProcesada.map((data: any) => data.amount);
 
-            setCategories({ labels: labels, data: values });
+            setCategories({ labels: labels, data: values, title: categories.title });
         }
 
     }, [incomesList, globalDispatch])
@@ -91,12 +126,7 @@ const IncomesView = () => {
             name: 'Categoría',
             key: 'category_name',
             type: eTypeColumns.TEXT
-        }, {
-            id: 'status',
-            name: 'Estatus',
-            key: 'is_active',
-            type: eTypeColumns.TEXT_BADGE
-        }, {
+        },{
             id: 'amount',
             name: 'Monto',
             key: 'amount',
@@ -112,12 +142,19 @@ const IncomesView = () => {
     return (
         <React.Fragment>
             <Header />
-            <div >
-                <TableComponent onDelete={onDelete} getDataOnSearch={[]} columns={columns} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <SimpleDountChart
+                    data={categories}
+                />
+                <div className="lg:col-span-3">
+                    <TableComponent onDelete={onDelete} getDataOnSearch={incomesList} columns={columns} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>
+                
+                </div>
             </div>
 
             <ModalComponent openModal={openModal} title="Agregar Ingreso" onClose={onClose}>
-                <ExpenseForm closeModal={onClose} dataForm={editingValues}></ExpenseForm>
+                <IncomeForm closeModal={onClose} dataForm={editingValues}></IncomeForm>
             </ModalComponent>
             {showErrorModal &&
                 <ErrorModalComponent openModal={showErrorModal} onCloseModal={() => setShowErrorModal(false)} />

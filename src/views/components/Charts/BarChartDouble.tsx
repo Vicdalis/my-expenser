@@ -6,9 +6,9 @@ import Loading from '@/components/shared/Loading'
 import Chart from '@/components/shared/Chart'
 import { COLORS } from '@/constants/chart.constant'
 import isEmpty from 'lodash/isEmpty'
-import { useAppSelector } from './store'
+import { useAppSelector } from '../../dashboard/store'
 
-type ProjectOverviewChart = {
+type OverviewChart = {
     onGoing: number
     finished: number
     total: number
@@ -19,11 +19,12 @@ type ProjectOverviewChart = {
     range: string[]
 }
 
-type TaskOverviewProps = {
+type BarChartDoubleProps = {
     data?: {
-        chart?: Record<string, ProjectOverviewChart>
+        chart?: Record<string, OverviewChart>
     }
     className?: string
+    title: string
 }
 
 type ChartLegendProps = {
@@ -50,7 +51,7 @@ const ChartLegend = ({
     )
 }
 
-const TaskOverview = ({ data = {}, className }: TaskOverviewProps) => {
+const BarChartDouble = ({ data = {}, className, title }: BarChartDoubleProps) => {
     const [timeRange, setTimeRange] = useState(['weekly'])
 
     const [repaint, setRepaint] = useState(false)
@@ -71,7 +72,7 @@ const TaskOverview = ({ data = {}, className }: TaskOverviewProps) => {
     return (
         <Card className={className}>
             <div className="flex sm:flex-row flex-col md:items-center justify-between mb-6 gap-4">
-                <h4>Gastos Pendejos</h4>
+                <h4>{title}</h4>
                 <Segment
                     value={timeRange}
                     size="sm"
@@ -79,9 +80,9 @@ const TaskOverview = ({ data = {}, className }: TaskOverviewProps) => {
                         setTimeRange(val as string[])
                     }
                 >
-                    <Segment.Item value="monthly">Monthly</Segment.Item>
-                    <Segment.Item value="weekly">Weekly</Segment.Item>
-                    <Segment.Item value="daily">Daily</Segment.Item>
+                    <Segment.Item value="monthly">Mensual</Segment.Item>
+                    <Segment.Item value="weekly">Semanal</Segment.Item>
+                    <Segment.Item value="daily">Diario</Segment.Item>
                 </Segment>
             </div>
             {!isEmpty(data) && !repaint && data.chart && (
@@ -90,7 +91,7 @@ const TaskOverview = ({ data = {}, className }: TaskOverviewProps) => {
                         <div>
                             <ChartLegend
                                 showBadge={false}
-                                label="Total Tasks"
+                                label="Total"
                                 value={data.chart[timeRange[0]].total}
                             />
                         </div>
@@ -127,4 +128,4 @@ const TaskOverview = ({ data = {}, className }: TaskOverviewProps) => {
     )
 }
 
-export default TaskOverview
+export default BarChartDouble

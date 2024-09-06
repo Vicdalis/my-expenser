@@ -3,19 +3,20 @@ import Badge from '@/components/ui/Badge'
 import Chart from '@/components/shared/Chart'
 import { COLORS } from '@/constants/chart.constant'
 
-type SalesByCategoriesProps = {
+type SimpleDountChartProps = {
     data?: {
         labels: string[]
         data: number[]
+        title: string
     }
 }
 
-const SalesByCategories = ({
-    data = { labels: [], data: [] },
-}: SalesByCategoriesProps) => {
+const SimpleDountChart = ({
+    data = { labels: [], data: [], title: 'Categorías' },
+}: SimpleDountChartProps) => {
     return (
         <Card>
-            <h4>Gastos por Categoría</h4>
+            <h4>{data.title}</h4>
             <div className="mt-6">
                 {data.data.length > 0 && (
                     <>
@@ -55,4 +56,4 @@ const SalesByCategories = ({
     )
 }
 
-export default SalesByCategories
+export default SimpleDountChart

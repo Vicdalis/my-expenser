@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import {db} from '@/configs/firebase.config';
-import { collection, getDoc, doc, setDoc, addDoc, getDocs, query, where, Timestamp } from 'firebase/firestore/lite';
+import { collection, getDoc, doc, setDoc, addDoc, getDocs, query, where, Timestamp, deleteDoc } from 'firebase/firestore/lite';
 import dayjs from 'dayjs';
 
 export type Income = {
@@ -21,7 +21,7 @@ type Query = {
     search: ''
 }
 
-type PutExpenseRequest = {
+type PutIncomeRequest = {
     description: string
     amount: number
     category_id: string
@@ -58,6 +58,8 @@ export const getIncomesList = createAsyncThunk(
                 finalData.push({...data, id: doc.id});
             })
             
+            console.log("🚀 ~ finalData:", finalData)
+            
             return finalData
         } catch (error) {
             console.log("🚀 ~ error:", error)
@@ -66,25 +68,50 @@ export const getIncomesList = createAsyncThunk(
     }
 )
 
-export const putExpense = createAsyncThunk(
+export const putIncome = createAsyncThunk(
     SLICE_NAME + '/putIncomes',
-    async (data: PutExpenseRequest) => {
+    async (data: PutIncomeRequest) => {
         try {
             let document;
+            let document_id = data.id;
             if(data.id){
                 document = doc(db, `users/${userId}/incomes/${data.id}`)
                 await setDoc(document, data);
             }else{
                 document = collection(db, `users/${userId}/incomes`);
-                await addDoc(document, data);
+                await addDoc(document, data).then((data) => {
+                    document_id = data.id
+                });
             }
             
             let updatedData: any = structuredClone(data);
             let mydate: any = data.date;
             updatedData.date = dayjs(new Date(mydate ?? 0 * 1000)).toISOString()
 
-            const savedData = {...updatedData, id: document.id}
+            const savedData = {...updatedData, id: document_id}
+            
+            console.log("🚀 ~ savedData:", savedData)
+
             return savedData
+        } catch (error) {
+            console.log("🚀 ~ error:", error)
+            return null
+        }
+    }
+)
+
+export const deleteIncome = createAsyncThunk(
+    SLICE_NAME + '/deleteIncome',
+    async (id: string) => {
+        try {
+            let document;
+            
+            document = doc(db, `users/${userId}/incomes/${id}`)
+            await deleteDoc(document)
+
+            console.log("🚀 ~ id:", id)
+
+            return id
         } catch (error) {
             console.log("🚀 ~ error:", error)
             return null
@@ -129,11 +156,12 @@ const incomeSlice = createSlice({
                 state.incomesList = action.payload
                 state.loading = false
             })
-            .addCase(putExpense.pending, (state) =>{
+            .addCase(putIncome.pending, (state) =>{
                 state.loading = true
             })
-            .addCase(putExpense.fulfilled, (state, action) => {
+            .addCase(putIncome.fulfilled, (state, action) => {
                 if(action.payload){
+                    console.log("🚀 ~ .addCase ~ action.payload:", action.payload)
                     const expenseFound = state.incomesList.findIndex((incomes) => incomes.id === action.payload!.id);
                     console.log("🚀 ~ .addCase ~ expenseFound:", expenseFound)
                     
@@ -142,6 +170,7 @@ const incomeSlice = createSlice({
                     }else{
                         state.incomesList = [...state.incomesList, ...[action.payload]]
                     }
+                    console.log("🚀 ~ .addCase ~ state.incomesList:", state.incomesList)
                 }
 
             })

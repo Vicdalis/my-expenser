@@ -1,23 +1,34 @@
 import React, { useEffect, useState } from "react";
-import HeaderExpenses from "./HeaderExpenses";
-import SalesByCategories from "../dashboard/SalesByCategories";
-import TableComponent from "../components/TableList";
-import { setTableData, updateProductList } from "../components/TableList/store";
-import ModalComponent from "../components/ModalComponent";
-import reducer, { Expense, getExpenseList, useAppSelector, useAppDispatch, deleteExpense } from "./store";
+
 import ExpenseForm from "./ExpenseForm";
-import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
+import HeaderExpenses from "./HeaderExpenses";
+
+import TableComponent from "../components/TableList";
+import ModalComponent from "../components/ModalComponent";
+import { updateProductList } from "../components/TableList/store";
+import SimpleDountChart from "../components/Charts/SimpleDonutChart";
 import ErrorModalComponent from "../components/Modals/ErrorModalComponent";
 import { Columns, eTypeColumns } from "../components/TableList/components/ItemsTable";
+
 import { toast } from "@/components/ui";
 import Notification from '@/components/ui/Notification'
 
+import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
+import reducer, { Expense, getExpenseList, useAppSelector, useAppDispatch, deleteExpense } from "./store";
+
 injectReducer('expense', reducer)
 
+interface iCategories{
+    labels: string[],
+    data: number[],
+    title: string
+}
+
 const ExpensesView = () => {
-    const [expensesCategories, setCategories] = useState({
-        labels: ['Comida', 'Belleza', 'Gym', 'Salud'],
-        data: [351, 246, 144, 83],
+    const [expensesCategories, setExpensesCategories] = useState<iCategories>({
+        labels: [],
+        data: [],
+        title: 'Gastos por Categoría'
     });
     const [openModal, setOpenModal] = useState(false);
     const [contentErrorModal, setContentErrorModal] = useState('');
@@ -100,7 +111,7 @@ const ExpensesView = () => {
             const labels = dataProcesada.map((data: any) => data.category_name);
             const values = dataProcesada.map((data: any) => data.amount);
 
-            setCategories({ labels: labels, data: values });
+            setExpensesCategories({ labels: labels, data: values, title: expensesCategories.title });
         }
 
     }, [expenseList, globalDispatch])
@@ -134,7 +145,7 @@ const ExpensesView = () => {
             <HeaderExpenses />
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <SalesByCategories
+                <SimpleDountChart
                     data={expensesCategories}
                 />
                 <div className="lg:col-span-3">

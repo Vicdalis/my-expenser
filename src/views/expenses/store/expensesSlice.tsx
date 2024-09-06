@@ -71,19 +71,23 @@ export const putExpense = createAsyncThunk(
     async (data: PutExpenseRequest) => {
         try {
             let document;
+            let document_id = data.id;
+
             if(data.id){
                 document = doc(db, `users/${userId}/expenses/${data.id}`)
                 await setDoc(document, data);
             }else{
                 document = collection(db, `users/${userId}/expenses`);
-                await addDoc(document, data);
+                await addDoc(document, data).then((data) => {
+                    document_id = data.id
+                });
             }
             
             let updatedData: any = structuredClone(data);
             let mydate: any = data.date;
             updatedData.date = dayjs(new Date(mydate ?? 0 * 1000)).toISOString()
 
-            const savedData = {...updatedData, id: document.id}
+            const savedData = {...updatedData, id: document_id}
             return savedData
         } catch (error) {
             console.log("🚀 ~ error:", error)

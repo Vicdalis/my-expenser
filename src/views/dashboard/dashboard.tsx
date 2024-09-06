@@ -1,15 +1,17 @@
 import Loading from "@/components/shared/Loading";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
+import BarChartDouble from "../components/Charts/SimpleDonutChart";
+import TaskOverview from "../components/Charts/BarChartDouble";
+
 import Statistic from './Statistic'
-import SalesByCategories from "./SalesByCategories";
-import TaskOverview from "./TaskOverview";
-import LatestOrder from "./LatestOrder";
 import TopProduct from "./TopProduct";
-import { getSalesDashboardData, setStartDate, useAppSelector } from "./store";
-import { useAppDispatch } from '@/store'
+import LatestOrder from "./LatestOrder";
 import DashboardHeader from "./dashboardHeader";
 import DashboardHeaderButtons from "./dashboardHeaderButtons";
 
+import { useAppDispatch } from '@/store'
+import { getSalesDashboardData, useAppSelector } from "./store";
 
 const DashboardComponent = () => {
     const [statistics, setStatistics] = useState({
@@ -30,6 +32,7 @@ const DashboardComponent = () => {
     const [expensesCategories, setCategories] = useState({
         labels: ['Comida', 'Belleza', 'Gym', 'Salud'],
         data: [351, 246, 144, 83],
+        title: 'Gastos por categoría'
     })
 
     const [expensesOverview, setExpensesOverview] = useState({
@@ -40,11 +43,11 @@ const DashboardComponent = () => {
                 total: 21,
                 series: [
                     {
-                        name: 'On Going',
+                        name: 'Gastos',
                         data: [20, 19, 18, 14, 12, 10],
                     },
                     {
-                        name: 'Finished',
+                        name: 'Ingresos',
                         data: [1, 4, 8, 15, 16, 18],
                     },
                 ],
@@ -63,11 +66,11 @@ const DashboardComponent = () => {
                 total: 213,
                 series: [
                     {
-                        name: 'On Going',
+                        name: 'Gastos',
                         data: [45, 52, 68, 84, 103, 112, 126],
                     },
                     {
-                        name: 'Finished',
+                        name: 'Ingresos',
                         data: [35, 41, 62, 62, 75, 81, 87],
                     },
                 ],
@@ -87,11 +90,11 @@ const DashboardComponent = () => {
                 total: 383,
                 series: [
                     {
-                        name: 'On Going',
+                        name: 'Gastos',
                         data: [28, 52, 91, 154, 227, 256, 270],
                     },
                     {
-                        name: 'Finished',
+                        name: 'Ingresos',
                         data: [22, 31, 74, 88, 97, 107, 113],
                     },
                 ],
@@ -122,8 +125,6 @@ const DashboardComponent = () => {
         return state.salesDashboard?.data.loading;
     })
 
-    
-
     useEffect(() => {
         fetchData()
         
@@ -144,8 +145,9 @@ const DashboardComponent = () => {
                     <TaskOverview
                         data={expensesOverview}
                         className="col-span-2"
+                        title="Movimientos"
                     />
-                    <SalesByCategories
+                    <BarChartDouble
                         data={expensesCategories}
                     />
                 </div>

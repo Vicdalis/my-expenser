@@ -23,8 +23,6 @@ type Query = {
     search: ''
 }
 
-type GetCategoryRequest = Query
-
 type PutCategoryRequest = {
     name: string
     type: string
@@ -47,7 +45,7 @@ export type ProjectListState = {
     newProjectDialog: boolean
 }
 
-export const SLICE_NAME = 'category'
+export const SLICE_NAME = 'categories'
 
 const userId = "UmibcB1i3xQiZA4yyESuDT5eeRp1";
 
@@ -106,15 +104,19 @@ export const putCategory = createAsyncThunk(
     async (data: PutCategoryRequest) => {
         try {
             let document;
+            let document_id = data.id;
+
             if(data.id){
                 document = doc(db, `users/${userId}/categories/${data.id}`)
                 await setDoc(document, data);
             }else{
                 document = collection(db, `users/${userId}/categories`);
-                await addDoc(document, data);
+                await addDoc(document, data).then((newData) => {
+                    document_id = newData.id
+                });
             }
             
-            const savedData = {...data, id: document.id}
+            const savedData = {...data, id: document_id!.toString()}
             return savedData
         } catch (error) {
             console.log("🚀 ~ error:", error)
