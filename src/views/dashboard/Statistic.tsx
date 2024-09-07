@@ -17,15 +17,15 @@ type StatisticCardProps = {
 
 type StatisticProps = {
     data?: {
-        revenue?: {
+        expenses?: {
             value: number
             growShrink: number
         }
-        orders?: {
+        incomes?: {
             value: number
             growShrink: number
         }
-        purchases?: {
+        savings?: {
             value: number
             growShrink: number
         }
@@ -74,14 +74,14 @@ const Statistic = ({ data = {} }: StatisticProps) => {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <StatisticCard
-                data={data.revenue}
+                data={data.expenses}
                 valuePrefix="$"
                 label="Gastos"
                 date={startDate}
             />
-            <StatisticCard data={data.orders} valuePrefix="$" label="Ingresos" date={startDate} />
+            <StatisticCard data={data.incomes} valuePrefix="$" label="Ingresos" date={startDate} />
             <StatisticCard
-                data={data.purchases}
+                data={data.savings}
                 valuePrefix="$"
                 label="Ahorro"
                 date={startDate}

@@ -1,8 +1,8 @@
 import Loading from "@/components/shared/Loading";
 import { useEffect, useState } from "react";
 
-import BarChartDouble from "../components/Charts/SimpleDonutChart";
-import TaskOverview from "../components/Charts/BarChartDouble";
+import SimpleDountChart from "../components/Charts/SimpleDonutChart";
+import BarChartDouble from "../components/Charts/BarChartDouble";
 
 import Statistic from './Statistic'
 import TopProduct from "./TopProduct";
@@ -10,28 +10,32 @@ import LatestOrder from "./LatestOrder";
 import DashboardHeader from "./dashboardHeader";
 import DashboardHeaderButtons from "./dashboardHeaderButtons";
 
-import { useAppDispatch } from '@/store'
+import { injectReducer, useAppDispatch } from '@/store'
 import { getSalesDashboardData, useAppSelector } from "./store";
+import  reducer, { getExpenseList, useAppSelector as useExpenseSelector } from "../expenses/store";
+import { iCategories } from "@/utils/interfaces/categories.interface";
+
+injectReducer('expense', reducer)
 
 const DashboardComponent = () => {
     const [statistics, setStatistics] = useState({
-        revenue: {
+        expenses: {
             value: 200000,
-            growShrink: 350000
+            growShrink: 0
         },
-        orders: {
+        incomes: {
             value: 200000,
-            growShrink: 350000
+            growShrink: 0
         },
-        purchases: {
+        savings: {
             value: 200000,
-            growShrink: 350000
+            growShrink: 0
         }
     });
 
-    const [expensesCategories, setCategories] = useState({
-        labels: ['Comida', 'Belleza', 'Gym', 'Salud'],
-        data: [351, 246, 144, 83],
+    const [expensesCategories, setCategories] = useState<iCategories>({
+        labels: [],
+        data: [],
         title: 'Gastos por categoría'
     })
 
@@ -121,19 +125,66 @@ const DashboardComponent = () => {
     )
 
     const loading = useAppSelector((state) => {
-        console.log("🚀 ~ loading ~ state:", state);
         return state.salesDashboard?.data.loading;
     })
 
+    const expenseList = useExpenseSelector((state) => state.expense?.data.expenseList)
+
+
     useEffect(() => {
-        fetchData()
-        
+        dispatch(getExpenseList())
     }, [])
 
+    useEffect(() => {
+        fetchData()
+    }, [expenseList])
+
+
     const fetchData = () => {
-        dispatch(getSalesDashboardData())
+        
+        console.log("🚀 ~ fetchData ~ expenseList:", expenseList)
+        if(expenseList){
+            const groupedData: any = expenseList.reduce((acc: any, item: any) => {
+                const { category_name, amount } = item;
+    
+                if (!acc[category_name]) {
+                    acc[category_name] = {
+                        category_name: category_name,
+                        amount: 0,
+                    };
+                }
+    
+                acc[category_name].amount += amount;
+    
+                return acc;
+            }, {});
+    
+            const dataProcesada = Object.values(groupedData);
+
+            let labels: string[] = [];
+            let values: number[] = [];
+            let totalExpenses: number = 0;
+
+            dataProcesada.map((data: any) =>{
+                labels.push(data.category_name)
+                values.push(data.amount)
+                totalExpenses+= data.amount
+            })
+            
+            console.log("🚀 ~ dataProcesada.map ~ totalExpenses:", totalExpenses)
+            
+            setCategories({labels: labels, data: values, title: expensesCategories.title})
+        
+            setStatistics((data) => {
+                data.expenses.value = totalExpenses
+                return data;
+            })
+        }
+
         // dispatch(setStartDate(1720483615))
     }
+
+    
 
     return (
         <div className="flex flex-col gap-4 h-full">
@@ -142,12 +193,12 @@ const DashboardComponent = () => {
                 <DashboardHeaderButtons></DashboardHeaderButtons>
                 <Statistic data={statistics} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <TaskOverview
+                    <BarChartDouble
                         data={expensesOverview}
                         className="col-span-2"
                         title="Movimientos"
                     />
-                    <BarChartDouble
+                    <SimpleDountChart
                         data={expensesCategories}
                     />
                 </div>

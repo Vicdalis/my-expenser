@@ -15,14 +15,9 @@ import Notification from '@/components/ui/Notification'
 
 import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
 import reducer, { Expense, getExpenseList, useAppSelector, useAppDispatch, deleteExpense } from "./store";
+import { iCategories } from "@/utils/interfaces/categories.interface";
 
 injectReducer('expense', reducer)
-
-interface iCategories{
-    labels: string[],
-    data: number[],
-    title: string
-}
 
 const ExpensesView = () => {
     const [expensesCategories, setExpensesCategories] = useState<iCategories>({

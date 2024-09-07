@@ -66,6 +66,29 @@ export const getExpenseList = createAsyncThunk(
     }
 )
 
+export const getExpenseByDate = createAsyncThunk(
+    SLICE_NAME + '/getExpenseByDate',
+    async (startdate: any, endDate: any) => {
+        try {
+            
+            const collect = query(collection(db, `users/${userId}/expenses`), where("is_archived", "==", false), where("date", '<=', startdate), where("date", '>=', endDate));
+            
+            const snapShot = await getDocs(collect);
+            let finalData: any = [];
+            snapShot.forEach((doc) => {
+                const data = doc.data();
+                data.date = dayjs(new Date(data.date.seconds * 1000)).toISOString();
+                finalData.push({...data, id: doc.id});
+            })
+            
+            return finalData
+        } catch (error) {
+            console.log("🚀 ~ error:", error)
+            return null;
+        }
+    }
+)
+
 export const putExpense = createAsyncThunk(
     SLICE_NAME + '/putExpense',
     async (data: PutExpenseRequest) => {

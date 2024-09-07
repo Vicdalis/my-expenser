@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Table from '@/components/ui/Table'
@@ -13,6 +13,8 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { NumericFormat } from 'react-number-format'
 import dayjs from 'dayjs'
+import { Segment } from '@/components/ui'
+import { HiInformationCircle } from 'react-icons/hi'
 
 type Order = {
     id: string
@@ -130,11 +132,30 @@ const LatestOrder = ({ data = [], className }: LatestOrderProps) => {
         getCoreRowModel: getCoreRowModel(),
     })
 
+    const [timeRange, setTimeRange] = useState(['weekly'])
+
     return (
         <Card className={className}>
             <div className="flex items-center justify-between mb-6">
-                <h4>Últimos Gastos</h4>
-                <Button size="sm">Ver Todos</Button>
+                <div className='flex'>
+                <h4>Calculadora de Presupuesto </h4>
+                <HiInformationCircle  className='text-xl ml-2 cursor-pointer text-[#4F46E5]'/>
+                </div>
+                
+                <div className='flex items-right'>
+                    <Segment
+                        value={timeRange}
+                        size="sm"
+                        onChange={(val: string | string[]) =>
+                            setTimeRange(val as string[])
+                        }
+                    >
+                        <Segment.Item value="monthly">Mensual</Segment.Item>
+                        <Segment.Item value="weekly">Semanal</Segment.Item>
+                        <Segment.Item value="daily">Diario</Segment.Item>
+                    </Segment>
+                    
+                </div>
             </div>
             <Table>
                 <THead>
