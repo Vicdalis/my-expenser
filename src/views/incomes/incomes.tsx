@@ -9,14 +9,14 @@ import Notification from '@/components/ui/Notification'
 import TableComponent from "../components/TableList";
 import ModalComponent from "../components/ModalComponent";
 import { updateProductList } from "../components/TableList/store";
+import SimpleDountChart from "../components/Charts/SimpleDonutChart";
 import ErrorModalComponent from "../components/Modals/ErrorModalComponent";
 import { Columns, eTypeColumns } from "../components/TableList/components/ItemsTable";
 
 import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
-import reducer, { Income, getIncomesList, useAppSelector, useAppDispatch, deleteIncome } from "./store";
-import SimpleDountChart from "../components/Charts/SimpleDonutChart";
+import incomeReducer, { Income, getIncomesList, useAppSelector, useAppDispatch, deleteIncome } from "./store";
 
-injectReducer('income', reducer)
+injectReducer('income', incomeReducer)
 
 interface iCategories{
     labels: string[],

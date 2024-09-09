@@ -8,9 +8,9 @@ import { COLORS } from '@/constants/chart.constant'
 import isEmpty from 'lodash/isEmpty'
 import { useAppSelector } from '../../dashboard/store'
 
-type OverviewChart = {
-    onGoing: number
-    finished: number
+export type OverviewChart = {
+    expenses: number
+    incomes: number
     total: number
     series: {
         name: string
@@ -19,7 +19,7 @@ type OverviewChart = {
     range: string[]
 }
 
-type BarChartDoubleProps = {
+export type BarChartDoubleProps = {
     data?: {
         chart?: Record<string, OverviewChart>
     }
@@ -99,12 +99,12 @@ const BarChartDouble = ({ data = {}, className, title }: BarChartDoubleProps) =>
                             <ChartLegend
                                 badgeClass="bg-indigo-600"
                                 label={data.chart[timeRange[0]].series[0].name}
-                                value={data.chart[timeRange[0]].onGoing}
+                                value={data.chart[timeRange[0]].expenses}
                             />
                             <ChartLegend
                                 badgeClass="bg-emerald-500"
                                 label={data.chart[timeRange[0]].series[1].name}
-                                value={data.chart[timeRange[0]].finished}
+                                value={data.chart[timeRange[0]].incomes}
                             />
                         </div>
                     </div>
