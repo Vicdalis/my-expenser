@@ -179,7 +179,6 @@ const expensesSlice = createSlice({
             .addCase(putExpense.fulfilled, (state, action) => {
                 if(action.payload){
                     const expenseFound = state.expenseList.findIndex((expense) => expense.id === action.payload!.id);
-                    console.log("🚀 ~ .addCase ~ expenseFound:", expenseFound)
                     
                     if(expenseFound != -1){
                         state.expenseList[expenseFound] = action.payload;

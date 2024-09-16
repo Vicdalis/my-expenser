@@ -58,8 +58,6 @@ export const getIncomesList = createAsyncThunk(
                 finalData.push({...data, id: doc.id});
             })
             
-            console.log("🚀 ~ finalData:", finalData)
-            
             return finalData
         } catch (error) {
             console.log("🚀 ~ error:", error)
@@ -89,8 +87,6 @@ export const putIncome = createAsyncThunk(
             updatedData.date = dayjs(new Date(mydate ?? 0 * 1000)).toISOString()
 
             const savedData = {...updatedData, id: document_id}
-            
-            console.log("🚀 ~ savedData:", savedData)
 
             return savedData
         } catch (error) {
@@ -108,8 +104,6 @@ export const deleteIncome = createAsyncThunk(
             
             document = doc(db, `users/${userId}/incomes/${id}`)
             await deleteDoc(document)
-
-            console.log("🚀 ~ id:", id)
 
             return id
         } catch (error) {
@@ -161,16 +155,13 @@ const incomeSlice = createSlice({
             })
             .addCase(putIncome.fulfilled, (state, action) => {
                 if(action.payload){
-                    console.log("🚀 ~ .addCase ~ action.payload:", action.payload)
                     const expenseFound = state.incomesList.findIndex((incomes) => incomes.id === action.payload!.id);
-                    console.log("🚀 ~ .addCase ~ expenseFound:", expenseFound)
                     
                     if(expenseFound != -1){
                         state.incomesList[expenseFound] = action.payload;
                     }else{
                         state.incomesList = [...state.incomesList, ...[action.payload]]
                     }
-                    console.log("🚀 ~ .addCase ~ state.incomesList:", state.incomesList)
                 }
 
             })

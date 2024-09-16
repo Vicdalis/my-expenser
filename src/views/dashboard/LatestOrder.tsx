@@ -141,21 +141,6 @@ const LatestOrder = ({ data = [], className }: LatestOrderProps) => {
                 <h4>Calculadora de Presupuesto </h4>
                 <HiInformationCircle  className='text-xl ml-2 cursor-pointer text-[#4F46E5]'/>
                 </div>
-                
-                <div className='flex items-right'>
-                    <Segment
-                        value={timeRange}
-                        size="sm"
-                        onChange={(val: string | string[]) =>
-                            setTimeRange(val as string[])
-                        }
-                    >
-                        <Segment.Item value="monthly">Mensual</Segment.Item>
-                        <Segment.Item value="weekly">Semanal</Segment.Item>
-                        <Segment.Item value="daily">Diario</Segment.Item>
-                    </Segment>
-                    
-                </div>
             </div>
             <Table>
                 <THead>

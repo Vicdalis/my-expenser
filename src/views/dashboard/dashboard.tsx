@@ -15,6 +15,7 @@ import { getSalesDashboardData, useAppSelector } from "./store";
 import reducer, { getExpenseList, useAppSelector as useExpenseSelector } from "../expenses/store";
 import incomeReducer, { getIncomesList, useAppSelector as useIncomeSelector } from "../incomes/store";
 import { iCategories } from "@/utils/interfaces/categories.interface";
+import dayjs from "dayjs";
 
 injectReducer('expense', reducer)
 injectReducer('income', incomeReducer)
@@ -117,8 +118,6 @@ const DashboardComponent = () => {
                 totalExpenses += data.amount
             })
 
-            console.log("🚀 ~ dataProcesada.map ~ totalExpenses:", totalExpenses)
-
             setTotalExpenses(totalExpenses)
             setCategories({ labels: labels, data: values, title: expensesCategories.title })
 
@@ -147,45 +146,51 @@ const DashboardComponent = () => {
     }
 
     const setOverviewData = () => {
-        let expenseDates: any[] = [];
-        const expenseData = expenseList.map((expense) => {
-            expenseDates.push(expense.date)
-            return expense.amount
+        let incomeData: { [key: string] : number} = {};
+        let expenseData: { [key: string] : number} = {};
+        let months: {income: { [key: string] : number}, expense: { [key: string] : number}} = {income: {}, expense: {}}
+        
+        expenseList.map((expense) => {
+            let mydate = dayjs(new Date(expense.date!.toString())).format('DD-MM')
+            incomeData[mydate] = incomeData[mydate] ?? 0;
+            expenseData[mydate] = expense.amount;
+
+            let mymonth = dayjs(new Date(expense.date!.toString())).format('MMM')
+            months.expense[mymonth] = months.expense[mymonth] ?? 0 + expense.amount;
         });
         
-        let incomesDates: any[] = [];
-        const incomeData = incomeList.map((income) => {
-            incomesDates.push(income.date)
-            return income.amount
+        incomeList.map((income) => {
+            let mydate = dayjs(new Date(income.date!.toString())).format('DD-MM')
+            incomeData[mydate] = income.amount;
+            expenseData[mydate] = expenseData[mydate] ?? 0;
+
+            let mymonth = dayjs(new Date(income.date!.toString())).format('MMM')
+            months.income[mymonth] = (months.income[mymonth] ?? 0) + income.amount;
         })
-        
-        console.log("🚀 ~ setOverviewData ~ expenseDates:", expenseDates)
-        console.log("🚀 ~ setOverviewData ~ incomesDates:", incomesDates)
+        //Daily
+        let allDates =[...new Set([...Object.keys(expenseData), ...Object.keys(incomeData)])];
+        let dailyExpenses = { data: Object.values(expenseData), total: Object.values(expenseData).reduce((a: any, b: any) => a + b, 0)};
+        let dailyIncomes = { data: Object.values(incomeData), total: Object.values(incomeData).reduce((a: any, b: any) => a + b, 0)};
+
+        let monthlyDates = [...new Set([...Object.keys(months.expense), ...Object.keys(months.income)])]
 
         const newOverview = {
             chart: {
                 daily: {
-                    expenses: 13,
-                    incomes: 9,
-                    total: 21,
+                    expenses: dailyExpenses.total,
+                    incomes: dailyIncomes.total,
+                    total: (dailyExpenses.total as number) + (dailyIncomes.total as number),
                     series: [
                         {
                             name: 'Gastos',
-                            data: [20, 19, 18, 14, 12, 10],
+                            data: dailyExpenses.data,
                         },
                         {
                             name: 'Ingresos',
-                            data: [1, 4, 8, 15, 16, 18],
+                            data: dailyIncomes.data,
                         },
                     ],
-                    range: [
-                        '6:00am',
-                        '9:00am',
-                        '12:00pm',
-                        '03:00pm',
-                        '06:00pm',
-                        '09:00pm',
-                    ],
+                    range: allDates,
                 },
                 weekly: {
                     expenses: 126,
@@ -218,22 +223,14 @@ const DashboardComponent = () => {
                     series: [
                         {
                             name: 'Gastos',
-                            data: expenseData
+                            data: Object.values(months.expense)
                         },
                         {
                             name: 'Ingresos',
-                            data: incomeData
+                            data: Object.values(months.income)
                         }
                     ],
-                    range: [
-                        '01 Jan',
-                        '05 Jan',
-                        '10 Jan',
-                        '15 Jan',
-                        '20 Jan',
-                        '25 Jan',
-                        '27 Jan',
-                    ],
+                    range: monthlyDates,
                 }
             },
         }

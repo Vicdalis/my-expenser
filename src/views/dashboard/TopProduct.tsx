@@ -43,14 +43,14 @@ const columnHelper = createColumnHelper<Product>()
 
 const columns = [
     columnHelper.accessor('name', {
-        header: 'Product',
+        header: 'Nombre',
         cell: (props) => {
             const row = props.row.original
             return <ProductColumn row={row} />
         },
     }),
     columnHelper.accessor('sold', {
-        header: 'Sold',
+        header: 'Monto',
     }),
 ]
 
