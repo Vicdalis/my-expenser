@@ -81,7 +81,7 @@ const BarChartDouble = ({ data = {}, className, title }: BarChartDoubleProps) =>
                     }
                 >
                     <Segment.Item value="monthly">Mensual</Segment.Item>
-                    <Segment.Item value="weekly">Semanal</Segment.Item>
+                    {/* <Segment.Item value="weekly">Semanal</Segment.Item>s */}
                     <Segment.Item value="daily">Diario</Segment.Item>
                 </Segment>
             </div>

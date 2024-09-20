@@ -8,37 +8,61 @@ import {
 } from './store'
 import { useAppDispatch } from '@/store'
 import { HiOutlineFilter } from 'react-icons/hi'
-import dayjs from 'dayjs'
 import Select from "@/components/ui/Select";
 import HeaderComponent from '../components/HeaderComponent'
+import { useEffect, useState } from 'react'
+import moment from 'moment/moment';
 
 const dateFormat = 'MMM DD, YYYY'
 
 const { DatePickerRange } = DatePicker
 
 const DashboardHeader = () => {
+    moment.locale('es');
+    const months = moment.months()
+
     const dispatch = useAppDispatch()
 
-    const startDate = useAppSelector(
-        (state) => state.salesDashboard?.data.startDate
-    )
-    const endDate = useAppSelector((state) => state.salesDashboard?.data.endDate)
+    const monthOptions: {value: string, label:string}[]  = months.map((month: string) => {
+        return {value: month, label: month}
+    });
+    const [defaultMonth, setDefaultMonth] = useState<{value: string, label:string}>();
+    const [defaultYear, setDefaultYear] = useState<{value: string, label:string}>();
 
-    const handleDateChange = (value: [Date | null, Date | null]) => {
-        dispatch(setStartDate(dayjs(value[0]).unix()))
-        dispatch(setEndDate(dayjs(value[1]).unix()))
-    }
+
+    // const startDate = useAppSelector(
+    //     (state) => state.salesDashboard?.data.startDate
+    // )
+    // const endDate = useAppSelector((state) => state.salesDashboard?.data.endDate)
+
+    // const handleDateChange = (value: [Date | null, Date | null]) => {
+    //     dispatch(setStartDate(dayjs(value[0]).unix()))
+    //     dispatch(setEndDate(dayjs(value[1]).unix()))
+    // }
+
 
     const onFilter = () => {
         dispatch(getSalesDashboardData())
     }
 
-    const monthOptions = [
-        { value: 'ocean', label: 'Enero', color: '#00B8D9' },
-        { value: 'blue', label: 'Febrero', color: '#0052CC' },
-        { value: 'purple', label: 'Marzo', color: '#5243AA' },
-        { value: 'red', label: 'Abril', color: '#FF5630' },
+    const yearOptions = [
+        { value: '2024', label: '2024' },
+        { value: '2023', label: '2023' },
+        { value: '2022', label: '2022' },
     ]
+
+    useEffect(()=>{
+        let currentMonth = moment().format('MMMM');
+        let foundedMonth = monthOptions.find((month) => month.label === currentMonth)
+        console.log("🚀 ~ useEffect ~ foundedMonth:", foundedMonth)
+        setDefaultMonth(foundedMonth ?? monthOptions[0]);
+
+        let currentYear = moment().format('YYYY');
+        let foundedYear = yearOptions.find((year) => year.label === currentYear);
+        console.log("🚀 ~ useEffect ~ foundedYear:", foundedYear)
+        setDefaultYear(foundedYear ?? yearOptions[0]);
+
+    }, [])
 
     return (
             <HeaderComponent title='Inicio' subtitle='Resumen de Gastos'>
@@ -46,7 +70,12 @@ const DashboardHeader = () => {
                     <Select
                         placeholder="Elija un Mes"
                         options={monthOptions}
-                        defaultValue={monthOptions[0]}
+                        value={defaultMonth}
+                    ></Select>
+                    <Select 
+                        placeholder="Elija un Año"
+                        options={yearOptions}
+                        value={defaultYear}
                     ></Select>
                     <Button size="sm" icon={<HiOutlineFilter />} onClick={onFilter}>
                         Filter
