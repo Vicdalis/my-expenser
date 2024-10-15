@@ -11,14 +11,16 @@ import DashboardHeader from "./dashboardHeader";
 import DashboardHeaderButtons from "./dashboardHeaderButtons";
 
 import { injectReducer, useAppDispatch } from '@/store'
-import { getSalesDashboardData, useAppSelector } from "./store";
-import reducer, { getExpenseList, useAppSelector as useExpenseSelector } from "../expenses/store";
+import dashboardReducer, { useAppSelector as useDashboardSelector } from "./store";
+import reducer, { getExpenseByDate, getExpenseList, useAppSelector as useExpenseSelector } from "../expenses/store";
 import incomeReducer, { getIncomesList, useAppSelector as useIncomeSelector } from "../incomes/store";
 import { iCategories } from "@/utils/interfaces/categories.interface";
 import dayjs from "dayjs";
+import { useSelector } from "react-redux";
 
 injectReducer('expense', reducer)
 injectReducer('income', incomeReducer)
+injectReducer('salesDashboard', dashboardReducer)
 
 const DashboardComponent = () => {
     const [statistics, setStatistics] = useState({
@@ -50,28 +52,25 @@ const DashboardComponent = () => {
 
     const dispatch = useAppDispatch()
 
-    const dashboardData = useAppSelector(
+    const dashboardData = useDashboardSelector(
         (state) => {
-            return state.salesDashboard?.data.dashboardData
+            return state.salesDashboard?.data
         }
     )
 
-    const loading = useAppSelector((state) => {
-        return state.salesDashboard?.data.loading;
-    })
-
-    const expenseList = useExpenseSelector((state) => state.expense?.data.expenseList)
+    const expenseList = useExpenseSelector((state) => state.expense?.data.expenseByDate)
     const incomeList = useIncomeSelector((state) => state.income?.data.incomesList)
 
     useEffect(() => {
         const fetchData = async () => {
-            await dispatch(getExpenseList());
+            // await dispatch(getExpenseList());
+            await dispatch(getExpenseByDate({startdate: dashboardData.startDate, endDate: dashboardData.endDate}));
             await dispatch(getIncomesList());
             setFirstLoad(true);
         };
 
         fetchData();
-    }, [dispatch])
+    }, [dashboardData.startDate, dashboardData.endDate])
 
     useEffect(() => {
         fetchExpenses()
@@ -82,15 +81,15 @@ const DashboardComponent = () => {
     }, [incomeList])
 
     useEffect(() => {
-        if (expenseList && incomeList && firstLoad) {
+        if (expenseList && incomeList ) {
             setOverviewData();
         }
     }, [expenseList, incomeList]);
 
 
     const fetchExpenses = () => {
-        console.log("🚀 ~ fetchData ~ expenseList:", expenseList)
-        if (expenseList) {
+        console.log("🚀 ~ fetchExpenses ~ expenseList:", expenseList)
+        if (expenseList) { 
             const groupedData: any = expenseList.reduce((acc: any, item: any) => {
                 const { category_name, amount } = item;
 
@@ -125,6 +124,17 @@ const DashboardComponent = () => {
                 data.expenses.value = totalExpenses
                 return data;
             })
+        }else{
+            setTotalExpenses(0);
+            setCategories({
+                labels: [],
+                data: [],
+                title: 'Gastos por categoría'
+            })
+            setStatistics((data) => {
+                data.expenses.value = 0
+                return data;
+            })
         }
     }
 
@@ -135,7 +145,6 @@ const DashboardComponent = () => {
                 total += income.amount
             })
 
-            console.log("🚀 ~ fetchIncomes ~ total:", total)
             setTotalIncomes(total);
 
             setStatistics((data) => {
@@ -167,6 +176,7 @@ const DashboardComponent = () => {
             let mymonth = dayjs(new Date(income.date!.toString())).format('MMM')
             months.income[mymonth] = (months.income[mymonth] ?? 0) + income.amount;
         })
+        
         //Daily
         let allDates =[...new Set([...Object.keys(expenseData), ...Object.keys(incomeData)])];
         let dailyExpenses = { data: Object.values(expenseData), total: Object.values(expenseData).reduce((a: any, b: any) => a + b, 0)};
@@ -235,8 +245,6 @@ const DashboardComponent = () => {
             },
         }
 
-        console.log("🚀 ~ setOverviewData ~ newOverview:", newOverview)
-
         setOverview(newOverview);
         setFirstLoad(false);
     }
@@ -244,7 +252,7 @@ const DashboardComponent = () => {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <Loading loading={loading}>
+            {/* <Loading loading={loading}> */}
                 <DashboardHeader></DashboardHeader>
                 {/* <DashboardHeaderButtons></DashboardHeaderButtons> */}
                 <Statistic data={statistics} />
@@ -259,13 +267,13 @@ const DashboardComponent = () => {
                     />
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <LatestOrder
+                    {/* <LatestOrder
                         data={dashboardData?.latestOrderData}
                         className="lg:col-span-2"
                     />
-                    <TopProduct data={dashboardData?.topProductsData} />
+                    <TopProduct data={dashboardData?.topProductsData} /> */}
                 </div>
-            </Loading>
+            {/* </Loading> */}
         </div>
     )
 }

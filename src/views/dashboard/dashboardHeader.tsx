@@ -5,15 +5,16 @@ import {
     setEndDate,
     getSalesDashboardData,
     useAppSelector,
+    useAppDispatch as useDashboardDispatch
 } from './store'
-import { useAppDispatch } from '@/store'
-import { HiOutlineFilter } from 'react-icons/hi'
+ import { HiOutlineFilter } from 'react-icons/hi'
 import Select from "@/components/ui/Select";
 import HeaderComponent from '../components/HeaderComponent'
 import { useEffect, useState } from 'react'
 import moment from 'moment/moment';
+import dayjs from 'dayjs'
 
-const dateFormat = 'MMM DD, YYYY'
+const dateFormat = 'YYYY-MM-DD'
 
 const { DatePickerRange } = DatePicker
 
@@ -21,7 +22,7 @@ const DashboardHeader = () => {
     moment.locale('es');
     const months = moment.months()
 
-    const dispatch = useAppDispatch()
+    const dispatch = useDashboardDispatch()
 
     const monthOptions: {value: string, label:string}[]  = months.map((month: string) => {
         return {value: month, label: month}
@@ -35,10 +36,18 @@ const DashboardHeader = () => {
     // )
     // const endDate = useAppSelector((state) => state.salesDashboard?.data.endDate)
 
-    // const handleDateChange = (value: [Date | null, Date | null]) => {
-    //     dispatch(setStartDate(dayjs(value[0]).unix()))
-    //     dispatch(setEndDate(dayjs(value[1]).unix()))
-    // }
+    const handleDateChange = (month: {value: string, label:string}, year: {value: string, label:string}) => {
+        let newStartDate = new Date(month.value + '/' + year.label);
+        console.log("🚀 ~ handleDateChange ~ newStartDate:", newStartDate)
+        
+        let newEndDate: string = moment(newStartDate).endOf('months').format(dateFormat)
+        
+        let formattedStartDate: string = moment(newStartDate).format(dateFormat)
+        console.log("🚀 ~ handleDateChange ~ formattedStartDate:", formattedStartDate)
+
+        dispatch(setStartDate(formattedStartDate))
+        dispatch(setEndDate(newEndDate))
+    }
 
 
     const onFilter = () => {
@@ -52,16 +61,20 @@ const DashboardHeader = () => {
     ]
 
     useEffect(()=>{
+        console.log('AQUI VOY? ')
         let currentMonth = moment().format('MMMM');
         let foundedMonth = monthOptions.find((month) => month.label === currentMonth)
-        console.log("🚀 ~ useEffect ~ foundedMonth:", foundedMonth)
         setDefaultMonth(foundedMonth ?? monthOptions[0]);
 
         let currentYear = moment().format('YYYY');
         let foundedYear = yearOptions.find((year) => year.label === currentYear);
-        console.log("🚀 ~ useEffect ~ foundedYear:", foundedYear)
         setDefaultYear(foundedYear ?? yearOptions[0]);
 
+        // let newStartDate = new Date(foundedMonth?.value + '/' + foundedYear?.value);
+        // dispatch(setStartDate(moment(newStartDate).format(dateFormat)))
+
+        // let newEndDate = moment(newStartDate).endOf('months').format(dateFormat)
+        // dispatch(setEndDate(newEndDate))
     }, [])
 
     return (
@@ -71,11 +84,23 @@ const DashboardHeader = () => {
                         placeholder="Elija un Mes"
                         options={monthOptions}
                         value={defaultMonth}
+                        onChange={(newValue) => {
+                            if(newValue){
+                                setDefaultMonth(newValue)
+                                handleDateChange(newValue, defaultYear ?? yearOptions[0])
+                            }
+                        }}
                     ></Select>
                     <Select 
                         placeholder="Elija un Año"
                         options={yearOptions}
                         value={defaultYear}
+                        onChange={(newValue) => {
+                            if(newValue){
+                                setDefaultYear(newValue)
+                                handleDateChange(defaultMonth ?? monthOptions[0], newValue)
+                            }
+                        }}
                     ></Select>
                     <Button size="sm" icon={<HiOutlineFilter />} onClick={onFilter}>
                         Filter

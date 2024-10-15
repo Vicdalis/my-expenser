@@ -34,6 +34,7 @@ type PutExpenseRequest = {
 export type ExpensesState = {
     loading: boolean
     expenseList: Expense[]
+    expenseByDate: Expense[]
     view: 'grid' | 'list'
     query: Query
     newProjectDialog: boolean
@@ -68,10 +69,12 @@ export const getExpenseList = createAsyncThunk(
 
 export const getExpenseByDate = createAsyncThunk(
     SLICE_NAME + '/getExpenseByDate',
-    async (startdate: any, endDate: any) => {
+    async (data: {startdate: string, endDate: string}) => {
         try {
+            console.log("🚀 ~ startdate:", data.startdate)
+            console.log("🚀 ~ endDate:", data.endDate)
             
-            const collect = query(collection(db, `users/${userId}/expenses`), where("is_archived", "==", false), where("date", '<=', startdate), where("date", '>=', endDate));
+            const collect = query(collection(db, `users/${userId}/expenses`), where("is_archived", "==", false), where("date", '>=', new Date(data.startdate)), where("date", '<=', new Date(data.endDate)));
             
             const snapShot = await getDocs(collect);
             let finalData: any = [];
@@ -80,11 +83,12 @@ export const getExpenseByDate = createAsyncThunk(
                 data.date = dayjs(new Date(data.date.seconds * 1000)).toISOString();
                 finalData.push({...data, id: doc.id});
             })
+            console.log("🚀 ~ snapShot.forEach ~ finalData:", finalData)
             
             return finalData
         } catch (error) {
-            console.log("🚀 ~ error:", error)
-            return null;
+            console.error("🚀 ~ error:", error)
+            return rejectWithValue(error);
         }
     }
 )
@@ -139,6 +143,7 @@ export const deleteExpense = createAsyncThunk(
 const initialState: ExpensesState = {
     loading: false,
     expenseList: [],
+    expenseByDate: [],
     view: 'grid',
     query: {
         sort: 'asc',
@@ -173,6 +178,13 @@ const expensesSlice = createSlice({
                 state.expenseList = action.payload
                 state.loading = false
             })
+            .addCase(getExpenseByDate.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(getExpenseByDate.fulfilled, (state, action) => { 
+                console.log("🚀 ~ .addCase ~ action.payload:", action.payload)
+                state.expenseByDate = action.payload
+            })
             .addCase(putExpense.pending, (state) =>{
                 state.loading = true
             })
@@ -195,3 +207,7 @@ export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch } =
 expensesSlice.actions
 
 export default expensesSlice.reducer
+function rejectWithValue(error: unknown): any {
+    throw new Error('Function not implemented.');
+}
+

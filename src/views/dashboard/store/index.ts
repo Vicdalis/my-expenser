@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import type { RootState } from '@/store'
 
-const reducer = combineReducers({
+const dashboardReducer = combineReducers({
     data: reducers,
 })
 
@@ -22,4 +22,4 @@ export const useAppSelector: TypedUseSelectorHook<
 
 export * from './salesDashboardSlice'
 export { useAppDispatch } from '@/store'
-export default reducer
+export default dashboardReducer

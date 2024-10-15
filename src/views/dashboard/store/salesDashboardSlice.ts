@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
 import { apiGetSalesDashboardData } from '@/services/SalesService'
+import moment from 'moment'
 
 type Statistic = {
     value: number
@@ -44,8 +45,8 @@ export type DashboardData = {
 type DashboardDataResponse = DashboardData
 
 export type SalesDashboardState = {
-    startDate: number
-    endDate: number
+    startDate: string
+    endDate: string
     loading: boolean
     dashboardData: DashboardData
 }
@@ -61,10 +62,8 @@ export const getSalesDashboardData = createAsyncThunk(
 )
 
 const initialState: SalesDashboardState = {
-    startDate: dayjs(
-        dayjs().subtract(3, 'month').format('DD-MMM-YYYY, hh:mm A')
-    ).unix(),
-    endDate: dayjs(new Date()).unix(),
+    startDate: moment().format('YYYY-MM-DD'),
+    endDate: moment().add(30, 'days').format('YYYY-MM-DD'),
     loading: true,
     dashboardData: {},
 }
@@ -73,26 +72,27 @@ const salesDashboardSlice = createSlice({
     name: `${SLICE_NAME}/state`,
     initialState,
     reducers: {
-        setStartDate: (state, action: PayloadAction<number>) => {
-            console.log("🚀 ~ state:", state)
-            state.startDate = action.payload
+        setStartDate: (state, action) => {
+            if(state.startDate != action.payload){
+                state.startDate = action.payload
+            }
         },
-        setEndDate: (state, action: PayloadAction<number>) => {
+        setEndDate: (state, action) => {
             state.endDate = action.payload
         },
     },
-    extraReducers: (builder) => {
-        builder
-            .addCase(getSalesDashboardData.fulfilled, (state, action) => {
-                console.log("🚀 ~ .addCase ~ action:", action)
-                state.dashboardData = action.payload
-                state.loading = false
-            })
-            .addCase(getSalesDashboardData.pending, (state) => {
-                console.log("🚀 ~ .addCase ~ state:", state)
-                state.loading = true
-            })
-    },
+    // extraReducers: (builder) => {
+    //     builder
+    //         .addCase(getSalesDashboardData.fulfilled, (state, action) => {
+    //             console.log("🚀 ~ .addCase ~ action:", action)
+    //             state.dashboardData = action.payload
+    //             state.loading = false
+    //         })
+    //         .addCase(getSalesDashboardData.pending, (state) => {
+    //             console.log("🚀 ~ .addCase ~ state:", state)
+    //             state.loading = true
+    //         })
+    // },
 })
 
 export const { setStartDate, setEndDate } = salesDashboardSlice.actions
