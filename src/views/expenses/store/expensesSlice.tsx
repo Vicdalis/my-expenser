@@ -71,8 +71,6 @@ export const getExpenseByDate = createAsyncThunk(
     SLICE_NAME + '/getExpenseByDate',
     async (data: {startdate: string, endDate: string}) => {
         try {
-            console.log("🚀 ~ startdate:", data.startdate)
-            console.log("🚀 ~ endDate:", data.endDate)
             
             const collect = query(collection(db, `users/${userId}/expenses`), where("is_archived", "==", false), where("date", '>=', new Date(data.startdate)), where("date", '<=', new Date(data.endDate)));
             

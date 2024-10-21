@@ -1,18 +1,19 @@
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Chart from '@/components/shared/Chart'
-import { COLORS } from '@/constants/chart.constant'
+import { COLORS, tailwindColors } from '@/constants/chart.constant'
 
 type SimpleDountChartProps = {
     data?: {
         labels: string[]
         data: number[]
+        colors?: string[]
         title: string
     }
 }
 
 const SimpleDountChart = ({
-    data = { labels: [], data: [], title: 'Categorías' },
+    data = { labels: [], colors: [], data: [], title: 'Categorías' },
 }: SimpleDountChartProps) => {
     return (
         <Card>
@@ -27,7 +28,11 @@ const SimpleDountChart = ({
                             )}$`}
                             donutText="Total"
                             series={data.data}
-                            customOptions={{ labels: data.labels }}
+                            customOptions={{ labels: data.labels, 
+                                colors: data.colors?.map((color: string) => {
+                                    return tailwindColors[color as keyof typeof tailwindColors]
+                                }) 
+                            }}
                             type="donut"
                         />
                         {data.data.length === data.labels.length && (
@@ -38,8 +43,9 @@ const SimpleDountChart = ({
                                         className="flex items-center gap-1"
                                     >
                                         <Badge
+                                            className={data.colors ? "bg-" + data.colors[index] + '-500' : ''}
                                             badgeStyle={{
-                                                backgroundColor: COLORS[index],
+                                                backgroundColor: data.colors ? '' : COLORS[index],
                                             }}
                                         />
                                         <span className="font-semibold">

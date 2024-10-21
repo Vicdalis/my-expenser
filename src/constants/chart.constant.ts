@@ -37,3 +37,14 @@ export const COLORS_LIGHT = [
     COLOR_6_LIGHT,
     COLOR_7_LIGHT,
 ]
+
+export const tailwindColors = {
+    'red': '#ef4444',
+    'blue': '#3b82f6',
+    'green': '#22c55e',
+    'violet': '#8B5CF6',
+    'lime': '#84CC16',
+    'verde': '#14B8A6',
+    'orange': '#F97316',
+    'cyan': '#06B6D4'
+  };

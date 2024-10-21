@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import type { TypedUseSelectorHook } from 'react-redux'
 import type { RootState } from '@/store'
 
-const reducer = combineReducers({
+const categoriesReducer = combineReducers({
     data: reducers,
 })
 
@@ -19,4 +19,4 @@ export const useAppSelector: TypedUseSelectorHook<
 
 export * from './projectListSlice'
 export { useAppDispatch } from '@/store'
-export default reducer
+export default categoriesReducer

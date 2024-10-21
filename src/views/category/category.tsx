@@ -3,12 +3,12 @@ import HeaderComponent from "../components/HeaderComponent";
 import ModalComponent from "../components/ModalComponent";
 import TableComponent from "../components/TableList";
 import CategoryForm from "./CategoryForm";
-import reducer, { useAppSelector, useAppDispatch, getCategoryList, Category } from "./store";
+import categoriesReducer, { useAppSelector, useAppDispatch, getCategoryList, Category } from "./store";
 import { injectReducer, useAppDispatch as useGlobalDispatch  } from '@/store'
 import { Loading } from "@/components/shared";
 import { updateProductList } from "../components/TableList/store";
 
-injectReducer('categories', reducer)
+injectReducer('categories', categoriesReducer)
 
 interface iCategories{
     labels: string[],
