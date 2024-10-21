@@ -34,6 +34,7 @@ type PutIncomeRequest = {
 export type IncomesState = {
     loading: boolean
     incomesList: Income[]
+    icomeListByDate: Income[]
     view: 'grid' | 'list'
     query: Query
     newProjectDialog: boolean
@@ -60,7 +61,30 @@ export const getIncomesList = createAsyncThunk(
             
             return finalData
         } catch (error) {
-            console.log("🚀 ~ error:", error)
+            console.error("🚀 ~ error:", error)
+            return null;
+        }
+    }
+)
+
+export const getIncomesListByDate = createAsyncThunk(
+    SLICE_NAME + '/getIncomesListByDate',
+    async (data: {startdate: string, endDate: string}) => {
+        try {
+            
+            const collect = query(collection(db, `users/${userId}/incomes`), where("is_archived", "==", false), where("date", '>=', new Date(data.startdate)), where("date", '<=', new Date(data.endDate)));
+            
+            const snapShot = await getDocs(collect);
+            let finalData: any = [];
+            snapShot.forEach((doc) => {
+                const data = doc.data();
+                data.date = dayjs(new Date(data.date.seconds * 1000)).toISOString();
+                finalData.push({...data, id: doc.id});
+            })
+            
+            return finalData
+        } catch (error) {
+            console.error("🚀 ~ error:", error)
             return null;
         }
     }
@@ -90,7 +114,7 @@ export const putIncome = createAsyncThunk(
 
             return savedData
         } catch (error) {
-            console.log("🚀 ~ error:", error)
+            console.error("🚀 ~ error:", error)
             return null
         }
     }
@@ -107,7 +131,7 @@ export const deleteIncome = createAsyncThunk(
 
             return id
         } catch (error) {
-            console.log("🚀 ~ error:", error)
+            console.error("🚀 ~ error:", error)
             return null
         }
     }
@@ -116,6 +140,7 @@ export const deleteIncome = createAsyncThunk(
 const initialState: IncomesState = {
     loading: false,
     incomesList: [],
+    icomeListByDate: [],
     view: 'grid',
     query: {
         sort: 'asc',
@@ -148,6 +173,14 @@ const incomeSlice = createSlice({
             })
             .addCase(getIncomesList.fulfilled, (state, action) => { 
                 state.incomesList = action.payload
+                state.loading = false
+            })
+            .addCase(getIncomesListByDate.pending, (state) => {
+                state.loading = true
+            })
+            .addCase(getIncomesListByDate.fulfilled, (state, action) => { 
+                console.log("🚀 ~ .addCase ~ action.payload:", action.payload)
+                state.icomeListByDate = action.payload
                 state.loading = false
             })
             .addCase(putIncome.pending, (state) =>{

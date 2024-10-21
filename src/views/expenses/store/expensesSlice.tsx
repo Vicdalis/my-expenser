@@ -8,7 +8,7 @@ export type Expense = {
     amount: number
     category_id: string
     category_name: string
-    date: Timestamp | null
+    date: Date | null
     description: string
     is_active?: boolean
     is_archived?: boolean
@@ -26,7 +26,7 @@ type PutExpenseRequest = {
     amount: number
     category_id: string
     category_name: string
-    date: Timestamp | null
+    date: Date | null
     is_archived?: boolean
     id?: string
 }

@@ -33,7 +33,7 @@ type FormModel = {
     category: string
     category_name: string
     amount: number
-    date: Timestamp | null
+    date: Date | null
     id?: string
 }
 
@@ -102,6 +102,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
             
             setCategories(categories);
         })
+        console.log(dataForm)
     }, [dispatch])
 
     const onSubmit = (
@@ -134,7 +135,7 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                 description: dataForm?.description ?? '',
                 category: dataForm?.category_id ?? "",
                 amount: dataForm?.amount ?? 0,
-                date: dataForm?.date ?? null,
+                date: dataForm?.date ?? new Date(),
                 category_name: dataForm?.category_name ?? ""
             }}
             validationSchema={validationSchema}
@@ -174,8 +175,8 @@ const ExpenseForm = ({ closeModal, dataForm }: { closeModal: any, dataForm?: Exp
                         </FormItem>
                         <FormItem
                             label="Fecha"
-                            invalid={errors.date && touched.date}
-                            errorMessage={errors.date}
+                            invalid={typeof errors.date === 'string' ? errors.date && touched.date : undefined}
+                            errorMessage={typeof errors.date === 'string' ? errors.date : undefined}
                         >
                             <Field name="date">
                             {({ field, form }: FieldProps) => (
