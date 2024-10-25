@@ -35,6 +35,7 @@ export type IncomesState = {
     loading: boolean
     incomesList: Income[]
     icomeListByDate: Income[]
+    selectedIncomeDate: string
     view: 'grid' | 'list'
     query: Query
     newProjectDialog: boolean
@@ -70,6 +71,8 @@ export const getIncomesList = createAsyncThunk(
 export const getIncomesListByDate = createAsyncThunk(
     SLICE_NAME + '/getIncomesListByDate',
     async (data: {startdate: string, endDate: string}) => {
+        console.log("🚀 ~ endDate:", data.endDate)
+        console.log("🚀 ~ startdate:", data.startdate)
         try {
             
             const collect = query(collection(db, `users/${userId}/incomes`), where("is_archived", "==", false), where("date", '>=', new Date(data.startdate)), where("date", '<=', new Date(data.endDate)));
@@ -141,6 +144,7 @@ const initialState: IncomesState = {
     loading: false,
     incomesList: [],
     icomeListByDate: [],
+    selectedIncomeDate: '',
     view: 'grid',
     query: {
         sort: 'asc',
@@ -153,6 +157,9 @@ const incomeSlice = createSlice({
     name: `${SLICE_NAME}/state`,
     initialState,
     reducers: {
+        setSelectedDate : (state, action) => {
+            state.selectedIncomeDate = action.payload;
+        },
         toggleView: (state, action) => {
             state.view = action.payload
         },
@@ -201,7 +208,7 @@ const incomeSlice = createSlice({
     },
 })
 
-export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch } =
+export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch, setSelectedDate } =
 incomeSlice.actions
 
 export default incomeSlice.reducer

@@ -14,20 +14,21 @@ import ErrorModalComponent from "../components/Modals/ErrorModalComponent";
 import { Columns, eTypeColumns } from "../components/TableList/components/ItemsTable";
 
 import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
-import incomeReducer, { Income, getIncomesList, useAppSelector, useAppDispatch, deleteIncome } from "./store";
+import incomeReducer, { Income, getIncomesList, useAppSelector, useAppDispatch, deleteIncome, getIncomesListByDate } from "./store";
+import moment from "moment";
+import { DATE_FORMAT } from "@/constants/app.constant";
+import categoriesReducer, { getCategoryList, useAppSelector as useCategorySelector } from "../category/store";
+import { iCategories } from "@/utils/interfaces/categories.interface";
 
 injectReducer('income', incomeReducer)
+injectReducer('categories', categoriesReducer)
 
-interface iCategories{
-    labels: string[],
-    data: number[],
-    title: string
-}
 
 const IncomesView = () => {
-    const [categories, setCategories] = useState<iCategories>({
+    const [IncomesCategories, setIncomesCategories] = useState<iCategories>({
         labels: [],
         data: [],
+        colors: [],
         title: 'Ingresos por Categoría'
     });
     const [openModal, setOpenModal] = useState(false);
@@ -77,26 +78,43 @@ const IncomesView = () => {
         }
     }
 
-    const incomesList = useAppSelector((state) => state.income.data.incomesList)
+    const incomesList = useAppSelector((state) => state.income.data.icomeListByDate)
+
+    const defaultDate = useAppSelector((state) => state.income.data.selectedIncomeDate)
+
+    const categories = useCategorySelector((state) => state.categories?.data.categoryList)
 
     useEffect(() => {
-        dispatch(getIncomesList());
-    }, [dispatch]);
+        console.log(defaultDate);
+        
+        let newStartDate = moment(new Date(defaultDate)).format(DATE_FORMAT);
+        console.log("🚀 ~ useEffect ~ newStartDate:", newStartDate)
+
+        let newEndDate = moment(new Date(defaultDate)).endOf('months').format(DATE_FORMAT)
+        console.log("🚀 ~ useEffect ~ newEndDate:", newEndDate)
+        
+        globalDispatch(getIncomesListByDate({startdate: newStartDate, endDate: newEndDate}));
+
+        globalDispatch(getCategoryList());
+
+    }, [dispatch, defaultDate]);
 
     useEffect(() => {
 
+        console.log("🚀 ~ useEffect ~ incomesList:", incomesList)
         if (incomesList === null) {
             setShowErrorModal(true)
         } else {
             globalDispatch(updateProductList(incomesList))
 
             const groupedData: any = incomesList.reduce((acc: any, item: any) => {
-                const { category_name, amount } = item;
+                const { category_name, amount, category_id } = item;
 
                 if (!acc[category_name]) {
                     acc[category_name] = {
                         category_name: category_name,
                         amount: 0,
+                        category_id: category_id
                     };
                 }
 
@@ -106,11 +124,23 @@ const IncomesView = () => {
             }, {});
 
             const dataProcesada = Object.values(groupedData);
+            let labels: string[] = [];
+            let values: number[] = [];
+            let colors: string[] = [];
 
-            const labels = dataProcesada.map((data: any) => data.category_name);
-            const values = dataProcesada.map((data: any) => data.amount);
+            dataProcesada.forEach((data: any) =>{
+                labels.push(data.category_name)
+                values.push(data.amount)
 
-            setCategories({ labels: labels, data: values, title: categories.title });
+                let founded = categories.find((category) => category.id === data.category_id)
+                colors.push(founded?.color ?? '')
+            })
+
+            // const labels = dataProcesada.map((data: any) => data.category_name);
+            // const values = dataProcesada.map((data: any) => data.amount);
+
+            setIncomesCategories({ labels: labels, data: values, colors: colors, title: IncomesCategories.title });
+            console.log("🚀 ~ useEffect ~ { labels: labels, data: values, colors: colors, title: IncomesCategories.title }:", { labels: labels, data: values, colors: colors, title: IncomesCategories.title })
         }
 
     }, [incomesList, globalDispatch])
@@ -145,7 +175,7 @@ const IncomesView = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                 <SimpleDountChart
-                    data={categories}
+                    data={IncomesCategories}
                 />
                 <div className="lg:col-span-3">
                     <TableComponent onDelete={onDelete} getDataOnSearch={incomesList} columns={columns} onEdit={onEdit} onAddItem={onCreate} deleteMessage={undefined}></TableComponent>

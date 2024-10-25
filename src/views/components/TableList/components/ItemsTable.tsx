@@ -150,7 +150,8 @@ const ItemsTable = <T,>({ deleteMessage, columnsList, onEdit, onDelete }: ItemsT
                     accessorKey: col.name,
                     cell: (props: any) => {
                         const row = props.row.original;
-
+                        const formatter = new Intl.NumberFormat('es-us', {style: 'currency', currency: 'USD'});
+                        
                         switch (col.type) {
                             case eTypeColumns.TEXT_IMAGE:
                                 return <Column row={{ img: row.image, name: row[col.key] }} />
@@ -192,9 +193,10 @@ const ItemsTable = <T,>({ deleteMessage, columnsList, onEdit, onDelete }: ItemsT
                                     </div>
                                 )
                             case eTypeColumns.CURRENCY:
+                                
                                 return (
                                     <div className="flex items-center gap-2">
-                                        {row[col.key]}
+                                        {formatter.format(row[col.key])}
                                     </div>
                                 )
 

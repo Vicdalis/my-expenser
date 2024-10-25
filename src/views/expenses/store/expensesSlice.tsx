@@ -35,6 +35,7 @@ export type ExpensesState = {
     loading: boolean
     expenseList: Expense[]
     expenseByDate: Expense[]
+    selectedDate: string
     view: 'grid' | 'list'
     query: Query
     newProjectDialog: boolean
@@ -81,7 +82,6 @@ export const getExpenseByDate = createAsyncThunk(
                 data.date = dayjs(new Date(data.date.seconds * 1000)).toISOString();
                 finalData.push({...data, id: doc.id});
             })
-            console.log("🚀 ~ snapShot.forEach ~ finalData:", finalData)
             
             return finalData
         } catch (error) {
@@ -142,6 +142,7 @@ const initialState: ExpensesState = {
     loading: false,
     expenseList: [],
     expenseByDate: [],
+    selectedDate: '',
     view: 'grid',
     query: {
         sort: 'asc',
@@ -166,6 +167,9 @@ const expensesSlice = createSlice({
         toggleNewProjectDialog: (state, action) => {
             state.newProjectDialog = action.payload
         },
+        setSelectedDate: (state, action) => {
+            state.selectedDate = action.payload
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -180,7 +184,6 @@ const expensesSlice = createSlice({
                 state.loading = true
             })
             .addCase(getExpenseByDate.fulfilled, (state, action) => { 
-                console.log("🚀 ~ .addCase ~ action.payload:", action.payload)
                 state.expenseByDate = action.payload
             })
             .addCase(putExpense.pending, (state) =>{
@@ -201,7 +204,7 @@ const expensesSlice = createSlice({
     },
 })
 
-export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch } =
+export const { toggleView, toggleSort, toggleNewProjectDialog, setSearch, setSelectedDate } =
 expensesSlice.actions
 
 export default expensesSlice.reducer

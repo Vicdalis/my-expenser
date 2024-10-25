@@ -31,19 +31,12 @@ const DashboardHeader = () => {
     const [defaultYear, setDefaultYear] = useState<{value: string, label:string}>();
 
 
-    // const startDate = useAppSelector(
-    //     (state) => state.salesDashboard?.data.startDate
-    // )
-    // const endDate = useAppSelector((state) => state.salesDashboard?.data.endDate)
-
     const handleDateChange = (month: {value: string, label:string}, year: {value: string, label:string}) => {
         let newStartDate = new Date(month.value + '/' + year.label);
-        console.log("🚀 ~ handleDateChange ~ newStartDate:", newStartDate)
         
         let newEndDate: string = moment(newStartDate).endOf('months').format(dateFormat)
         
         let formattedStartDate: string = moment(newStartDate).format(dateFormat)
-        console.log("🚀 ~ handleDateChange ~ formattedStartDate:", formattedStartDate)
 
         dispatch(setStartDate(formattedStartDate))
         dispatch(setEndDate(newEndDate))
@@ -70,11 +63,12 @@ const DashboardHeader = () => {
         let foundedYear = yearOptions.find((year) => year.label === currentYear);
         setDefaultYear(foundedYear ?? yearOptions[0]);
 
-        // let newStartDate = new Date(foundedMonth?.value + '/' + foundedYear?.value);
-        // dispatch(setStartDate(moment(newStartDate).format(dateFormat)))
+        let newStartDate = new Date(foundedMonth?.value + '/' + foundedYear?.value);
+        console.log("🚀 ~ useEffect ~ newStartDate:", newStartDate)
+        dispatch(setStartDate(moment(newStartDate).format(dateFormat)))
 
-        // let newEndDate = moment(newStartDate).endOf('months').format(dateFormat)
-        // dispatch(setEndDate(newEndDate))
+        let newEndDate = moment(newStartDate).endOf('months').format(dateFormat)
+        dispatch(setEndDate(newEndDate))
     }, [])
 
     return (
@@ -102,9 +96,6 @@ const DashboardHeader = () => {
                             }
                         }}
                     ></Select>
-                    <Button size="sm" icon={<HiOutlineFilter />} onClick={onFilter}>
-                        Filter
-                    </Button>
                 </div>
             </HeaderComponent>
     )

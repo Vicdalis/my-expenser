@@ -14,15 +14,21 @@ import { toast } from "@/components/ui";
 import Notification from '@/components/ui/Notification'
 
 import { injectReducer, useAppDispatch as useGlobalDispatch } from "@/store";
-import reducer, { Expense, getExpenseList, useAppSelector, useAppDispatch, deleteExpense } from "./store";
+import reducer, { Expense, getExpenseList, getExpenseByDate, useAppSelector, useAppDispatch, deleteExpense } from "./store";
 import { iCategories } from "@/utils/interfaces/categories.interface";
 
+import categoriesReducer, { getCategoryList, useAppSelector as useCategorySelector,  } from "../category/store"
+import moment from "moment";
+import { DATE_FORMAT } from "@/constants/app.constant";
+
 injectReducer('expense', reducer)
+injectReducer('categories', categoriesReducer)
 
 const ExpensesView = () => {
     const [expensesCategories, setExpensesCategories] = useState<iCategories>({
         labels: [],
         data: [],
+        colors: [],
         title: 'Gastos por Categoría'
     });
     const [openModal, setOpenModal] = useState(false);
@@ -72,11 +78,24 @@ const ExpensesView = () => {
         }
     }
 
-    const expenseList = useAppSelector((state) => state.expense.data.expenseList)
+    const expenseList = useAppSelector((state) => state.expense.data.expenseByDate)
+
+    const defaultDate = useAppSelector((state) => state.expense.data.selectedDate);
+
+    const categories = useCategorySelector((state) => state.categories?.data.categoryList)
 
     useEffect(() => {
-        dispatch(getExpenseList());
-    }, [dispatch]);
+        console.log(defaultDate);
+        
+        let newStartDate = moment(new Date(defaultDate)).format(DATE_FORMAT);
+
+        let newEndDate = moment(new Date(defaultDate)).endOf('months').format(DATE_FORMAT)
+        
+        globalDispatch(getExpenseByDate({startdate: newStartDate, endDate: newEndDate}));
+
+        globalDispatch(getCategoryList());
+        
+    }, [dispatch, defaultDate]);
 
     useEffect(() => {
 
@@ -87,12 +106,13 @@ const ExpensesView = () => {
             globalDispatch(updateProductList(expenseList))
 
             const groupedData: any = expenseList.reduce((acc: any, item: any) => {
-                const { category_name, amount } = item;
+                const { category_name, amount, category_id } = item;
 
                 if (!acc[category_name]) {
                     acc[category_name] = {
                         category_name: category_name,
                         amount: 0,
+                        category_id: category_id
                     };
                 }
 
@@ -102,11 +122,23 @@ const ExpensesView = () => {
             }, {});
 
             const dataProcesada = Object.values(groupedData);
+            let labels: string[] = [];
+            let values: number[] = [];
+            let colors: string[] = [];
 
-            const labels = dataProcesada.map((data: any) => data.category_name);
-            const values = dataProcesada.map((data: any) => data.amount);
+            dataProcesada.forEach((data: any) =>{
+                labels.push(data.category_name)
+                values.push(data.amount)
 
-            setExpensesCategories({ labels: labels, data: values, title: expensesCategories.title });
+                let founded = categories.find((category) => category.id === data.category_id)
+                colors.push(founded?.color ?? '')
+            })
+                console.log("🚀 ~ dataProcesada.forEach ~ colors:", colors)
+
+            // const labels = dataProcesada.map((data: any) => data.category_name);
+            // const values = dataProcesada.map((data: any) => data.amount);
+
+            setExpensesCategories({ labels: labels, data: values, colors: colors, title: expensesCategories.title });
         }
 
     }, [expenseList, globalDispatch])

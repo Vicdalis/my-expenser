@@ -1,42 +1,79 @@
 import Select from "@/components/ui/Select";
 import DatePickerRange from "@/components/ui/DatePicker/DatePickerRange";
 import HeaderComponent from "../components/HeaderComponent";
+import moment from "moment";
+import { setSelectedDate, useAppDispatch } from "./store";
+import { useEffect, useState } from "react";
 
 
 const Header = () => {
 
-    const monthOptions = [
-        { value: 'ocean', label: 'Hoy', color: '#00B8D9' },
-        { value: 'blue', label: 'Semana', color: '#0052CC' },
-        { value: 'purple', label: 'Mes Actual', color: '#5243AA' },
-        { value: 'red', label: 'Periodo', color: '#FF5630' },
+    moment.locale('es');
+    const months = moment.months()
+
+    const dispatch = useAppDispatch()
+
+    const monthOptions: { value: string, label: string }[] = months.map((month: string) => {
+        return { value: month, label: month }
+    });
+    const [defaultMonth, setDefaultMonth] = useState<{ value: string, label: string }>();
+    const [defaultYear, setDefaultYear] = useState<{ value: string, label: string }>();
+
+    const yearOptions = [
+        { value: '2024', label: '2024' },
+        { value: '2023', label: '2023' },
+        { value: '2022', label: '2022' },
     ]
 
-    const handleDateChange = (value: [Date | null, Date | null]) => {
-       
+    const handleDateChange = (month: { value: string, label: string }, year: { value: string, label: string }) => {
+        let newStartDate = new Date(month.value + '/' + year.label);
+        console.log(newStartDate)
+        dispatch(setSelectedDate(moment(newStartDate).format('MMMM/YYYY')))
     }
+
+    useEffect(() => {
+        console.log('AQUI VOY? ')
+        let currentMonth = moment().format('MMMM');
+        let foundedMonth = monthOptions.find((month) => month.label === currentMonth)
+        setDefaultMonth(foundedMonth ?? monthOptions[0]);
+
+        let currentYear = moment().format('YYYY');
+        let foundedYear = yearOptions.find((year) => year.label === currentYear);
+        setDefaultYear(foundedYear ?? yearOptions[0]);
+
+        let defaultDate = moment().format('MMMM/YYYY');
+        console.log("🚀 ~ useEffect ~ defaultMonth:", defaultDate)
+
+        dispatch(setSelectedDate(defaultDate))
+
+    }, [])
     
     return (
         <div>
             <HeaderComponent title="Ingresos" subtitle="Historial de Ingresos"> 
-                <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-                    <p className="m-3">Filtrar por: </p>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                     <Select
-                        className="min-w-32"
                         placeholder="Elija un Mes"
                         options={monthOptions}
-                        defaultValue={monthOptions[2]}
+                        value={defaultMonth}
+                        onChange={(newValue) => {
+                            if (newValue) {
+                                setDefaultMonth(newValue)
+                                handleDateChange(newValue, defaultYear ?? yearOptions[0])
+                            }
+                        }}
                     ></Select>
-                    <DatePickerRange
-                        // value={[
-                        //     dayjs.unix(1720567444).toDate(),
-                        //     dayjs.unix(1720740244).toDate(),
-                        // ]}
-                        inputFormat={'MMM DD, YYYY'}
-                        size="sm"
-                        onChange={handleDateChange}
-                        className="w-64"
-                    />
+                    <Select
+                        placeholder="Elija un Año"
+                        options={yearOptions}
+                        value={defaultYear}
+                        onChange={(newValue) => {
+                            if (newValue) {
+                                setDefaultYear(newValue)
+                                handleDateChange(defaultMonth ?? monthOptions[0], newValue)
+                            }
+                        }}
+                    ></Select>
                 </div>
             </HeaderComponent>
         </div>

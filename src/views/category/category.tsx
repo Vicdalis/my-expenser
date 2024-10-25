@@ -64,6 +64,11 @@ const CategoryView = () => {
             key: 'name',
             type: 'text_image'
         },{
+            id: 'category_color',
+            name: 'Color',
+            key: 'color',
+            type: 'badge'
+        },{
             id: 'category_type',
             name: 'Tipo',
             key: 'type',
@@ -73,11 +78,6 @@ const CategoryView = () => {
             name: 'Estatus',
             key: 'is_active',
             type: 'text_badge'
-        },{
-            id: 'category_color',
-            name: 'Color',
-            key: 'color',
-            type: 'badge'
         }
     ];
     

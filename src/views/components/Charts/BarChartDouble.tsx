@@ -52,7 +52,7 @@ const ChartLegend = ({
 }
 
 const BarChartDouble = ({ data = {}, className, title }: BarChartDoubleProps) => {
-    const [timeRange, setTimeRange] = useState(['weekly'])
+    const [timeRange, setTimeRange] = useState(['daily'])
 
     const [repaint, setRepaint] = useState(false)
 

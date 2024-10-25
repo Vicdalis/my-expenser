@@ -52,15 +52,7 @@ const StatisticCard = ({
                             prefix={valuePrefix}
                         />
                     </h3>
-                    <p>
-                        3 meses atrás, desde{' '}
-                        <span className="font-semibold">
-                        
-                            {dayjs(new Date(date * 1000)).format('DD-MM-YYYY')}
-                        </span>
-                    </p>
                 </div>
-                <GrowShrinkTag value={data.growShrink} suffix="%" />
             </div>
         </Card>
     )

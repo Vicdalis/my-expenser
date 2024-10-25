@@ -8,15 +8,18 @@ import DashboardHeader from "./dashboardHeader";
 
 import { injectReducer, useAppDispatch } from '@/store'
 import dashboardReducer, { useAppSelector as useDashboardSelector } from "./store";
-import reducer, { getExpenseByDate, useAppSelector as useExpenseSelector } from "../expenses/store";
-import incomeReducer, { getIncomesListByDate, Income, useAppSelector as useIncomeSelector } from "../incomes/store";
+import reducer, { getExpenseByDate, getExpenseList, useAppSelector as useExpenseSelector } from "../expenses/store";
+import incomeReducer, { getIncomesList, getIncomesListByDate, Income, useAppSelector as useIncomeSelector } from "../incomes/store";
 import { iCategories } from "@/utils/interfaces/categories.interface";
 import dayjs from "dayjs";
 import categoriesReducer, { getCategoryList, useAppSelector as useCategorySelector,  } from "../category/store";
 import { theme } from "twin.macro";
+import moment from "moment";
 
 injectReducer('expense', reducer)
 injectReducer('income', incomeReducer)
+injectReducer('expenseList', reducer)
+injectReducer('incomesList', reducer)
 injectReducer('salesDashboard', dashboardReducer)
 injectReducer('categories', categoriesReducer)
 
@@ -70,7 +73,8 @@ const DashboardComponent = () => {
             await dispatch(getExpenseByDate({startdate: dashboardData.startDate, endDate: dashboardData.endDate}));
             await dispatch(getIncomesListByDate({startdate: dashboardData.startDate, endDate: dashboardData.endDate}));
             await dispatch(getCategoryList())
-            // setFirstLoad(true);
+            await dispatch(getExpenseList())
+            await dispatch(getIncomesList())
         };
 
         fetchData();
@@ -92,8 +96,7 @@ const DashboardComponent = () => {
 
 
     const fetchExpenses = () => {
-        console.log("🚀 ~ fetchExpenses ~ expenseList:", expenseList)
-        console.log(categories)
+        
         if (expenseList) { 
             const groupedData: any = expenseList.reduce((acc: any, item: any) => {
                 const { category_name, amount, category_id } = item;
@@ -123,12 +126,9 @@ const DashboardComponent = () => {
                 values.push(data.amount)
                 let founded = categories.find((category) => category.id === data.category_id)
                 colors.push(founded?.color ?? '')
-                theme('colors.')
+                // theme('colors.')
                 totalExpenses += data.amount
             })
-            
-            console.log("🚀 ~ fetchExpenses ~ labels:", labels)
-            console.log("🚀 ~ fetchExpenses ~ colors:", colors)
 
             setTotalExpenses(totalExpenses)
             setCategories({ labels: labels, colors: colors, data: values, title: expensesCategories.title })
@@ -176,12 +176,12 @@ const DashboardComponent = () => {
         let dates =  new Set<string>()
         
         expenseList.forEach((expense) => {
-            let mydate = dayjs(new Date(expense.date!.toString())).format('DD-MM')
+            let mydate = dayjs(new Date(expense.date!.toString())).format('YYYY-MM-DD')
             dates.add(mydate)
         })
         
         incomeList.forEach((income) => {
-            let mydate = dayjs(new Date(income.date!.toString())).format('DD-MM')
+            let mydate = dayjs(new Date(income.date!.toString())).format('YYYY-MM-DD')
             dates.add(mydate)
         })
         
@@ -192,39 +192,38 @@ const DashboardComponent = () => {
             return dateA > dateB ? 1 : -1;
         })
         allDates.forEach((myDate) => {
-            let filteredIncome = incomeList.filter((income) => dayjs(new Date(income.date!.toString())).format('DD-MM') === myDate);
+            let filteredIncome = incomeList.filter((income) => dayjs(new Date(income.date!.toString())).format('YYYY-MM-DD') === myDate);
             let amount = 0;
             filteredIncome.forEach((filteredIncome) => {
                 amount += filteredIncome.amount; 
             })
             incomeData[myDate] = amount;
 
-            let filteredExpense = expenseList.filter((income) => dayjs(new Date(income.date!.toString())).format('DD-MM') === myDate);
+            let filteredExpense = expenseList.filter((income) => dayjs(new Date(income.date!.toString())).format('YYYY-MM-DD') === myDate);
             let expenseAmount = 0;
             filteredExpense.forEach((filteredExpense) => {
                 expenseAmount += filteredExpense.amount; 
             })
             expenseData[myDate] = expenseAmount;
         })
-
-        console.log("🚀 ~ setOverviewData ~ allDates:", allDates)
         
         expensesByYear.forEach((yearExpenses) => {
             let mymonth = dayjs(new Date(yearExpenses.date!.toString())).format('MMM')
             months.expense[mymonth] = months.expense[mymonth] ?? 0 + yearExpenses.amount;
         })
         
+        console.log("🚀 ~ expensesByYear.forEach ~ expensesByYear:", expensesByYear)
+
         incomesByYear.forEach((yearIncomes) => {
             let mymonth = dayjs(new Date(yearIncomes.date!.toString())).format('MMM')
             months.income[mymonth] = (months.income[mymonth] ?? 0) + yearIncomes.amount;
         })
-        
-        console.log("🚀 ~ setOverviewData ~ incomeData:", incomeData, Object.values(incomeData))
-        console.log("🚀 ~ setOverviewData ~ expenseData:", expenseData)
+    
         
         let dailyExpenses = { data: Object.values(expenseData), total: Object.values(expenseData).reduce((a: any, b: any) => a + b, 0)};
         let dailyIncomes = { data: Object.values(incomeData), total: Object.values(incomeData).reduce((a: any, b: any) => a + b, 0)};
         let monthlyDates = [...new Set([...Object.keys(months.expense), ...Object.keys(months.income)])]
+        console.log("🚀 ~ setOverviewData ~ monthlyDates:", monthlyDates)
         
 
         const newOverview = {
@@ -243,7 +242,9 @@ const DashboardComponent = () => {
                             data: dailyIncomes.data,
                         },
                     ],
-                    range: allDates,
+                    range: allDates.map((date) => {
+                        return dayjs(date, 'YYYY-MM-DD').format('DD-MM')
+                    }),
                 },
                 weekly: {
                     expenses: 126,
@@ -295,9 +296,7 @@ const DashboardComponent = () => {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            {/* <Loading loading={loading}> */}
                 <DashboardHeader></DashboardHeader>
-                {/* <DashboardHeaderButtons></DashboardHeaderButtons> */}
                 <Statistic data={statistics} />
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <BarChartDouble
@@ -309,14 +308,6 @@ const DashboardComponent = () => {
                         data={expensesCategories}
                     />
                 </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {/* <LatestOrder
-                        data={dashboardData?.latestOrderData}
-                        className="lg:col-span-2"
-                    />
-                    <TopProduct data={dashboardData?.topProductsData} /> */}
-                </div>
-            {/* </Loading> */}
         </div>
     )
 }
